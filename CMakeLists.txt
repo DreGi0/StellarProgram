@@ -16,6 +16,11 @@ add_executable(StellarProgram src/main.cpp
         src/graphics/mesh.cpp
         src/graphics/mesh.h)
 
+add_custom_command(TARGET StellarProgram POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:StellarProgram>/assets
+        COMMENT "Copying assets next to the executable")
+
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(StellarProgram PRIVATE glfw)
 

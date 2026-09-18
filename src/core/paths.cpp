@@ -7,7 +7,9 @@
 
 #include "paths.h"
 #include "filesystem"
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 namespace Stellar {
     /*
@@ -20,9 +22,6 @@ namespace Stellar {
      *
      * PS: I don't know why I found this one kind of hard to comprehend even though it's a pretty simple concept.
      */
-
-    // Linux-only implementation for now. Windows/macOS support branches will be added
-    // when the engine goes cross-platform and I learn how :/.
 
     namespace fs = std::filesystem;
 
@@ -41,7 +40,7 @@ namespace Stellar {
     }
 
     std::string asset_path(const std::string &relative) {
-        static const fs::path root = executable_dir().parent_path() / "assets";
+        static const fs::path root = executable_dir() / "assets";
         return (root / relative).string();
     }
 } // Stellar
