@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "stellar-program",
+  "version": "0.1.0",
+  "dependencies": [
+    "glfw3",
+    {
+      "name": "glad",
+      "features": [
+        "gl-api-46"
+      ]
+    }
+  ],
+  "builtin-baseline": "e0a6b8572cf0ac716fdc11466522cf744e97e0bd"
+}
