@@ -36,10 +36,6 @@ int main() {
         printf("[GLAD] GLSL Version: %s\n", glslVersion ? glslVersion : "Unknown");
         fflush(stdout);
 
-#ifdef STELLAR_DEBUG
-        // Stellar::enable_debug_output();
-#endif
-
         // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
