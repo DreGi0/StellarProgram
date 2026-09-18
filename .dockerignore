@@ -1,0 +1,9 @@
+# Build folders
+build/
+cmake-build-debug/
+
+# Version control
+.git/
+
+# Editor Config
+.idea/

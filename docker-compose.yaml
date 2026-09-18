@@ -1,0 +1,11 @@
+services:
+  apogee:
+    build: .
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:ro
+    devices:
+      - /dev/dri:/dev/dri
