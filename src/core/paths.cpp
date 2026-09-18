@@ -6,23 +6,12 @@
  */
 
 #include "paths.h"
-#include "filesystem"
+#include <filesystem>
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 namespace Stellar {
-    /*
-     * If you're dumb like me, the workflow is like this conversation between methods:
-     * assetpath(): Hey executableDir()! I need to know the path to the exe since assets is at the same level.
-     * executableDir(): Okay, let me see with Linux. Hey! what's the path to the exe in this environment.
-     * Linux: It's 'path/to/project/build/Apogee'.
-     * executableDir(): Thanks. assetpath(), the path is 'path/to/project/build/Apogee'.
-     * assetpath(): Thanks. So my path it actually is 'path/to/project/build/assets'.
-     *
-     * PS: I don't know why I found this one kind of hard to comprehend even though it's a pretty simple concept.
-     */
-
     namespace fs = std::filesystem;
 
     /// Returns the directory containing the running executable.
