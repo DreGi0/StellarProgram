@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "core/paths.h"
 #include "core/window.h"
@@ -76,7 +77,10 @@ int main() {
             shaderProgram.use();
             shaderProgram.set_vec3("uColor", 1.0f, 1.0f, 1.0f);
 
+            const auto time = static_cast<float>(glfwGetTime());
+
             auto modelMatrix = glm::mat4(1.0f);
+            modelMatrix = glm::rotate(modelMatrix, time, glm::vec3(1.0f, 0.0f, 0.0f));
             shaderProgram.set_mat4("uModel", glm::value_ptr(modelMatrix));
 
             triangleMesh.draw();
