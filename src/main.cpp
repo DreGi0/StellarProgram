@@ -4,6 +4,9 @@
 #include <exception>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "core/paths.h"
 #include "core/window.h"
@@ -73,6 +76,23 @@ int main() {
 
             shaderProgram.use();
             shaderProgram.set_vec3("uColor", 1.0f, 1.0f, 1.0f);
+
+            const auto time = static_cast<float>(glfwGetTime());
+
+            const auto modelMatrix = glm::rotate(glm::mat4(1.0f), time, glm::vec3(1.0f, 1.0f, 0.10f));
+            shaderProgram.set_mat4("uModel", glm::value_ptr(modelMatrix));
+
+            const auto viewMatrix = glm::lookAt(glm::vec3{0, 0, 3}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
+            shaderProgram.set_mat4("uView", glm::value_ptr(viewMatrix));
+
+            window.get_framebuffer_size(fbWidth, fbHeight);
+
+            const float aspectRatio = (fbHeight > 0)
+                ? static_cast<float>(fbWidth) / static_cast<float>(fbHeight)
+                : 1.0f;
+
+            const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+            shaderProgram.set_mat4("uProjection", glm::value_ptr(projectionMatrix));
 
             triangleMesh.draw();
 
