@@ -33,4 +33,5 @@ target_link_libraries(StellarProgram PRIVATE glfw)
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(StellarProgram PRIVATE glad::glad)
 
-
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(StellarProgram PRIVATE glm::glm)
