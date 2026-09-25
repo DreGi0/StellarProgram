@@ -10,6 +10,7 @@
 
 #include "core/paths.h"
 #include "core/window.h"
+#include "graphics/gl_debug.h"
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 
@@ -39,6 +40,10 @@ int main() {
         printf("[GLAD] GLSL Version: %s\n", glslVersion ? glslVersion : "Unknown");
         fflush(stdout);
 
+#ifdef STELLAR_DEBUG
+        Stellar::enableDebugOutput();
+#endif
+
         // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
@@ -54,25 +59,66 @@ int main() {
 
         // Model geometry
         constexpr float vertices[] = {
-            // Position (x, y, z)  |  Color (r, g, b)
-            0.5f, 0.5f, 0.0f,       0.0f, 0.0f, 1.0f,   // triangle 1: up-right - blue
-            -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,   // triangle 1: low-left - green
-            0.5f, -0.5f, 0.0f,      1.0f, 0.0f, 0.0f,   // triangle 1: low-right - red
+            // Position (x, y, z)     |  Color (r, g, b)
+            // Front (+Z) - red
+            -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // A
+             0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // B
+             0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // C
+             0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // C
+            -0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // D
+            -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // A
 
-            0.5f, 0.5f, 0.0f,       0.0f, 0.0f, 1.0f,   // triangle 2: up-right - blue
-            -0.5f, 0.5f, 0.0f,      1.0f, 0.0f, 0.0f,   // triangle 2: up-left - red
-            -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,   // triangle 2: low-left - green
+            // Back (-Z) - green
+             0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // F
+            -0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // E
+            -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // H
+            -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // H
+             0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // G
+             0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // F
+
+            // Right (+X) - blue
+             0.5f, -0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // B
+             0.5f, -0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // F
+             0.5f,  0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // G
+             0.5f,  0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // G
+             0.5f,  0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // C
+             0.5f, -0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // B
+
+            // Left (-X) - yellow
+            -0.5f, -0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // E
+            -0.5f, -0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // A
+            -0.5f,  0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // D
+            -0.5f,  0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // D
+            -0.5f,  0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // H
+            -0.5f, -0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // E
+
+            // Top (+Y) - cyan
+            -0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // D
+             0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // C
+             0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // G
+             0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // G
+            -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // H
+            -0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // D
+
+            // Bottom (-Y) - magenta
+            -0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // E
+             0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // F
+             0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // B
+             0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // B
+            -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // A
+            -0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // E
         };
 
         // Mesh
-        const Stellar::Mesh triangleMesh(vertices, 6);
+        const Stellar::Mesh triangleMesh(vertices, 36);
 
         // Background color used by glClear() on every frame
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
 
         // Main rendering loop
         while (!window.shouldClose()) {
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             shaderProgram.use();
             shaderProgram.set_vec3("uColor", 1.0f, 1.0f, 1.0f);
