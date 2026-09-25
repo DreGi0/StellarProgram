@@ -14,7 +14,9 @@ add_executable(StellarProgram src/main.cpp
         src/core/paths.cpp
         src/core/paths.h
         src/graphics/mesh.cpp
-        src/graphics/mesh.h)
+        src/graphics/mesh.h
+        src/graphics/gl_debug.cpp
+        src/graphics/gl_debug.h)
 
 add_custom_command(TARGET StellarProgram POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -35,3 +37,5 @@ target_link_libraries(StellarProgram PRIVATE glad::glad)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(StellarProgram PRIVATE glm::glm)
+
+target_compile_definitions(StellarProgram PRIVATE $<$<CONFIG:Debug>:STELLAR_DEBUG>)
