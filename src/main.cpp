@@ -64,53 +64,51 @@ int main() {
             -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // A
              0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // B
              0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // C
-             0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // C
             -0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // D
-            -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // A
 
             // Back (-Z) - green
              0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // F
             -0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // E
             -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // H
-            -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // H
              0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // G
-             0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // F
 
             // Right (+X) - blue
              0.5f, -0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // B
              0.5f, -0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // F
              0.5f,  0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // G
-             0.5f,  0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // G
              0.5f,  0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // C
-             0.5f, -0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // B
 
             // Left (-X) - yellow
             -0.5f, -0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // E
             -0.5f, -0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // A
             -0.5f,  0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // D
-            -0.5f,  0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // D
             -0.5f,  0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // H
-            -0.5f, -0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // E
 
             // Top (+Y) - cyan
             -0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // D
              0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // C
              0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // G
-             0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // G
             -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // H
-            -0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // D
 
             // Bottom (-Y) - magenta
             -0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // E
              0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // F
              0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // B
-             0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // B
             -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // A
-            -0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // E
         };
 
+        // Index data: 2 triangles per face, 4 vertices per face
+        constexpr unsigned int indices[] = {
+            0,  1,  2,    2,  3,  0,   // Front
+            4,  5,  6,    6,  7,  4,   // Back
+            8,  9, 10,   10, 11,  8,   // Right
+           12, 13, 14,   14, 15, 12,   // Left
+           16, 17, 18,   18, 19, 16,   // Top
+           20, 21, 22,   22, 23, 20,   // Bottom
+       };
+
         // Mesh
-        const Stellar::Mesh triangleMesh(vertices, 36);
+        const Stellar::Mesh cubeMesh(vertices, 24, indices, 36);
 
         // Background color used by glClear() on every frame
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
@@ -140,7 +138,7 @@ int main() {
             const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
             shaderProgram.set_mat4("uProjection", glm::value_ptr(projectionMatrix));
 
-            triangleMesh.draw();
+            cubeMesh.draw();
 
             window.swap_buffers();
             Stellar::Window::poll_events();
