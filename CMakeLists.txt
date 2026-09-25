@@ -16,7 +16,9 @@ add_executable(StellarProgram src/main.cpp
         src/graphics/mesh.cpp
         src/graphics/mesh.h
         src/graphics/gl_debug.cpp
-        src/graphics/gl_debug.h)
+        src/graphics/gl_debug.h
+        src/graphics/camera.cpp
+        src/graphics/camera.h)
 
 add_custom_command(TARGET StellarProgram POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

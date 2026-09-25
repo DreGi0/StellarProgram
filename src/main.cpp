@@ -10,6 +10,7 @@
 
 #include "core/paths.h"
 #include "core/window.h"
+#include "graphics/camera.h"
 #include "graphics/gl_debug.h"
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
@@ -114,6 +115,10 @@ int main() {
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
+        Stellar::Camera camera (glm::vec3(0.0f, 0.0f, 5.0f));
+
+        constexpr float moveDistance = 0.05f;
+
         // Main rendering loop
         while (!window.shouldClose()) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -123,10 +128,30 @@ int main() {
 
             const auto time = static_cast<float>(glfwGetTime());
 
-            const auto modelMatrix = glm::rotate(glm::mat4(1.0f), time, glm::vec3(1.0f, 1.0f, 0.10f));
+            constexpr auto modelMatrix = glm::mat4(1.0f);
             shaderProgram.set_mat4("uModel", glm::value_ptr(modelMatrix));
 
-            const auto viewMatrix = glm::lookAt(glm::vec3{0, 0, 3}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
+            if (glfwGetKey(window.get_window(), GLFW_KEY_W) == GLFW_PRESS)
+            {
+                camera.move_forward(moveDistance);
+            }
+
+            if (glfwGetKey(window.get_window(), GLFW_KEY_D) == GLFW_PRESS)
+            {
+                camera.move_right(moveDistance);
+            }
+
+            if (glfwGetKey(window.get_window(), GLFW_KEY_S) == GLFW_PRESS)
+            {
+                camera.move_forward(-moveDistance);
+            }
+
+            if (glfwGetKey(window.get_window(), GLFW_KEY_A) == GLFW_PRESS)
+            {
+                camera.move_right(-moveDistance);
+            }
+
+            const auto viewMatrix = camera.get_view_matrix();
             shaderProgram.set_mat4("uView", glm::value_ptr(viewMatrix));
 
             window.get_framebuffer_size(fbWidth, fbHeight);
