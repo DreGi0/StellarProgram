@@ -118,8 +118,13 @@ int main() {
         Stellar::Camera camera (glm::vec3(0.0f, 0.0f, 5.0f));
 
         constexpr float moveSpeed = 3.0f;
+        constexpr float mouseSensitivity = 0.1f;
 
         auto lastFrameTime = static_cast<float>(glfwGetTime());
+
+        glfwSetInputMode(window.get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        double lastMouseX = 0, lastMouseY = 0;
+        glfwGetCursorPos(window.get_window(), &lastMouseX, &lastMouseY);
 
         // Main rendering loop
         while (!window.shouldClose()) {
@@ -154,6 +159,20 @@ int main() {
             {
                 camera.move_right(-moveSpeed * deltaTime);
             }
+
+            double mouseX = 0, mouseY = 0;
+            glfwGetCursorPos(window.get_window(), &mouseX, &mouseY);
+
+            double offsetX = mouseX - lastMouseX;
+            double offsetY = lastMouseY - mouseY;
+
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+
+            offsetX = offsetX * mouseSensitivity;
+            offsetY = offsetY * mouseSensitivity;
+
+            camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
 
             const auto viewMatrix = camera.get_view_matrix();
             shaderProgram.set_mat4("uView", glm::value_ptr(viewMatrix));

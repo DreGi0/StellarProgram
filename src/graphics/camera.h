@@ -17,6 +17,8 @@ namespace Stellar
             glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 3.0f);
             glm::vec3 m_forward = glm::vec3(0.0f, 0.0f, -1.0f);
             glm::vec3 m_up = glm::vec3(0.0f, 1.0f, 0.0f);
+            float m_yaw = -90.0f;
+            float m_pitch = 0.0f;
 
         public:
             explicit Camera(glm::vec3 position);
@@ -26,5 +28,7 @@ namespace Stellar
             void move_forward(float distance);
 
             void move_right(float distance);
+
+            void rotate(float yawOffset, float pitchOffset);
     };
 } // Stellar

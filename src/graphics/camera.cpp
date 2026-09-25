@@ -30,4 +30,14 @@ namespace Stellar
     {
         m_position += glm::normalize(glm::cross(m_forward, m_up)) * distance;
     }
+
+    void Camera::rotate(float yawOffset, float pitchOffset)
+    {
+        m_yaw += yawOffset;
+        m_pitch += pitchOffset;
+
+        m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
+
+        m_forward = glm::normalize(glm::vec3(glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch)), glm::sin(glm::radians(m_pitch)), glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch))));
+    }
 } // Stellar
