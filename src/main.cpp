@@ -117,7 +117,9 @@ int main() {
 
         Stellar::Camera camera (glm::vec3(0.0f, 0.0f, 5.0f));
 
-        constexpr float moveDistance = 0.05f;
+        constexpr float moveSpeed = 3.0f;
+
+        auto lastFrameTime = static_cast<float>(glfwGetTime());
 
         // Main rendering loop
         while (!window.shouldClose()) {
@@ -127,28 +129,30 @@ int main() {
             shaderProgram.set_vec3("uColor", 1.0f, 1.0f, 1.0f);
 
             const auto time = static_cast<float>(glfwGetTime());
+            float deltaTime = time - lastFrameTime;
+            lastFrameTime = time;
 
             constexpr auto modelMatrix = glm::mat4(1.0f);
             shaderProgram.set_mat4("uModel", glm::value_ptr(modelMatrix));
 
             if (glfwGetKey(window.get_window(), GLFW_KEY_W) == GLFW_PRESS)
             {
-                camera.move_forward(moveDistance);
+                camera.move_forward(moveSpeed * deltaTime);
             }
 
             if (glfwGetKey(window.get_window(), GLFW_KEY_D) == GLFW_PRESS)
             {
-                camera.move_right(moveDistance);
+                camera.move_right(moveSpeed * deltaTime);
             }
 
             if (glfwGetKey(window.get_window(), GLFW_KEY_S) == GLFW_PRESS)
             {
-                camera.move_forward(-moveDistance);
+                camera.move_forward(-moveSpeed * deltaTime);
             }
 
             if (glfwGetKey(window.get_window(), GLFW_KEY_A) == GLFW_PRESS)
             {
-                camera.move_right(-moveDistance);
+                camera.move_right(-moveSpeed * deltaTime);
             }
 
             const auto viewMatrix = camera.get_view_matrix();
