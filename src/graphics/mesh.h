@@ -13,7 +13,7 @@
 namespace Stellar {
     /**
      * @class Mesh
-     * @brief Encapsulates a Vertex Array Object (VAO) and Vertex Buffer Object (VBO).
+     * @brief Encapsulates a Vertex Array Object (VAO), Vertex Buffer Object (VBO) and Element Buffer Object (EBO).
      */
     class Mesh {
     public:
@@ -21,8 +21,10 @@ namespace Stellar {
          * @brief Constructs a new Mesh Object and initialize buffers on the GPU.
          * @param vertices Pointer vertex float data array (Position + Color).
          * @param vertexCount Total number of vertices to process.
+         * @param indices Pointer to index data array (unsigned int).
+         * @param indexCount Total number of indices to draw.
          */
-        Mesh(const float* vertices, size_t vertexCount);
+        Mesh(const float* vertices, size_t vertexCount, const unsigned int* indices, size_t indexCount);
 
         // Disable copy to avoid duplicity of OpenGL handles
         Mesh(const Mesh&) = delete;
@@ -47,12 +49,13 @@ namespace Stellar {
         void draw() const;
 
         /**
-         * Destructor. Free up assigned hardware resources (VAO & VBO)
+         * Destructor. Free up assigned hardware resources (VAO, VBO & EBO)
          */
         ~Mesh();
     private:
-        GLsizei m_vertexCount = 0;
+        GLsizei m_indexCount = 0;
         GLuint m_vao = 0;
         GLuint m_vbo = 0;
+        GLuint m_ebo = 0;
     };
 } // Stellar
