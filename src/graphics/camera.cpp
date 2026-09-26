@@ -16,17 +16,17 @@ namespace Stellar
         m_position = position;
     }
 
-    glm::mat4 Camera::get_view_matrix() const
+    glm::mat4 Camera::getViewMatrix() const
     {
         return glm::lookAt(m_position,  m_position + m_forward, m_up);
     }
 
-    void Camera::move_forward(const float distance)
+    void Camera::moveForward(const float distance)
     {
         m_position += m_forward * distance;
     }
 
-    void Camera::move_right(const float distance)
+    void Camera::moveRight(const float distance)
     {
         m_position += glm::normalize(glm::cross(m_forward, m_up)) * distance;
     }

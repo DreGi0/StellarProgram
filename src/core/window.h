@@ -64,33 +64,33 @@ namespace Stellar {
         /**
          * @brief Swap front & back buffer (Double buffering).
          */
-        void swap_buffers() const;
+        void swapBuffers() const;
 
         /**
          * @brief Process queued events in GLFW (keyboard, mouse, window).
          */
-        static void poll_events();
+        static void pollEvents();
 
         /**
          * @brief Get current framebuffer dimensions in pixels
          * @param[out] width References where the width is stored
          * @param[out] height References where the height is stored
          */
-        void get_framebuffer_size(int& width, int& height) const;
+        void getFramebufferSize(int& width, int& height) const;
 
         /**
          * @brief Gets the underlying GLFW pointer.
-         * @return Raw pointer to the managed GLFWwindow structure.
+         * @return Raw pointer to the managed GLFW window structure.
          */
-        [[nodiscard]] GLFWwindow* get_window() const { return m_handle.get(); }
+        [[nodiscard]] GLFWwindow* getHandle() const { return m_handle.get(); }
 
         private:
         // Smart pointer
         std::unique_ptr<GLFWwindow, WindowDeleter> m_handle;
 
         // GLFW event callbacks
-        static void error_callback(int error, const char* description);
-        static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-        static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+        static void errorCallback(int error, const char* description);
+        static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
     };
 } // Stellar

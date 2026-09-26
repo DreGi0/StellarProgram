@@ -14,15 +14,15 @@
 
 namespace Stellar {
     Shader::Shader(const  std::string& vertexPath, const std::string& fragmentPath) {
-        const std::string vertexSrc = read_file(vertexPath);
-        const std::string fragmentSrc = read_file(fragmentPath);
+        const std::string vertexSrc = readFile(vertexPath);
+        const std::string fragmentSrc = readFile(fragmentPath);
 
-        const GLuint vertex = compile_shader(GL_VERTEX_SHADER, vertexSrc.c_str());
+        const GLuint vertex = compileShader(GL_VERTEX_SHADER, vertexSrc.c_str());
         if (!vertex) {
             throw std::runtime_error("[Shader] Failed to compile vertex shader: " + vertexPath);
         }
 
-        const GLuint fragment = compile_shader(GL_FRAGMENT_SHADER, fragmentSrc.c_str());
+        const GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fragmentSrc.c_str());
         if (!fragment) {
             glDeleteShader(vertex);
             throw std::runtime_error("[Shader] Failed to compile vertex shader: " + fragmentPath);
@@ -40,7 +40,7 @@ namespace Stellar {
         GLint linked = 0;
         glGetProgramiv(program, GL_LINK_STATUS, &linked);
         if (!linked) {
-            const std::string log = get_program_info_log(program);
+            const std::string log = getProgramInfoLog(program);
             glDeleteProgram(program);
 
             throw std::runtime_error("[Shader] Link failed:\n" + log);
@@ -83,19 +83,19 @@ namespace Stellar {
         glUseProgram(m_programId);
     }
 
-    void Shader::set_float(const char *name, float value) const {
-        glUniform1f(get_uniform_location(name), value);
+    void Shader::setFloat(const char *name, float value) const {
+        glUniform1f(getUniformLocation(name), value);
     }
 
-    void Shader::set_vec3(const std::string &name, float x, float y, float z) const {
-        glUniform3f(get_uniform_location(name), x, y, z);
+    void Shader::setVec3(const std::string &name, float x, float y, float z) const {
+        glUniform3f(getUniformLocation(name), x, y, z);
     }
 
-    void Shader::set_mat4(const std::string &name, const float *matrixData) const {
-        glUniformMatrix4fv(get_uniform_location(name), 1, GL_FALSE, matrixData);
+    void Shader::setMat4(const std::string &name, const float *matrixData) const {
+        glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrixData);
     }
 
-    GLuint Shader::compile_shader(const GLenum type, const char *src) {
+    GLuint Shader::compileShader(const GLenum type, const char *src) {
         const GLuint shader = glCreateShader(type);
 
         glShaderSource(shader, 1, &src, nullptr);
@@ -108,14 +108,14 @@ namespace Stellar {
         if (!success) {
             const char* typeName = (type == GL_VERTEX_SHADER ? "vertex" : "fragment");
             fprintf(stderr, "[Shader] failed to compile %s shader:\n%s\n",
-                typeName, get_shader_info_log(shader).c_str());
+                typeName, getShaderInfoLog(shader).c_str());
             glDeleteShader(shader);
             return 0;
         }
         return shader;
     }
 
-    std::string Shader::read_file(const std::string& path) {
+    std::string Shader::readFile(const std::string& path) {
         std::ifstream file(path);
 
         if (!file.is_open()) {
@@ -128,7 +128,7 @@ namespace Stellar {
         return buffer.str();
     }
 
-    std::string Shader::get_shader_info_log(GLuint shader) {
+    std::string Shader::getShaderInfoLog(GLuint shader) {
         GLint length = 0;
 
         // Get warning message length from OpenGL
@@ -148,7 +148,7 @@ namespace Stellar {
     // Note: kept duplicated on purpose since the OpenGL calls differ
     // (glGetShaderiv vs glGetProgramiv), so abstracting it costs more than repeating it.
 
-    std::string Shader::get_program_info_log(const GLuint program) {
+    std::string Shader::getProgramInfoLog(const GLuint program) {
         GLint length = 0;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
         if (length <= 1) return {}; // empty log x2 :)
@@ -159,7 +159,7 @@ namespace Stellar {
         return log;
     }
 
-    GLint Shader::get_uniform_location(const std::string &name) const {
+    GLint Shader::getUniformLocation(const std::string &name) const {
         if (const auto it = m_uniformLocationCache.find(name);
             it != m_uniformLocationCache.end()) {
             return it->second;

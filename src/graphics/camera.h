@@ -23,11 +23,11 @@ namespace Stellar
         public:
             explicit Camera(glm::vec3 position);
 
-            [[nodiscard]] glm::mat4 get_view_matrix() const;
+            [[nodiscard]] glm::mat4 getViewMatrix() const;
 
-            void move_forward(float distance);
+            void moveForward(float distance);
 
-            void move_right(float distance);
+            void moveRight(float distance);
 
             void rotate(float yawOffset, float pitchOffset);
     };

@@ -32,7 +32,7 @@ namespace Stellar
         double m_lastMouseX = 0.0;
         double m_lastMouseY = 0.0;
 
-        void process_input(float deltaTime);
+        void processInput(float deltaTime);
         void render() const;
     };
 } // Stellar

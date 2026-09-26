@@ -65,29 +65,29 @@ constexpr unsigned int CUBE_INDICES[] = {
     20, 21, 22,   22, 23, 20,   // Bottom
 };
 
-constexpr float moveSpeed = 10.0f;
-constexpr float mouseSensitivity = 0.1f;
+constexpr float MOVE_SPEED = 10.0f;
+constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 namespace Stellar
 {
     Application::Application() :
     m_window(800, 600, "Stellar Program"),
     m_graphicsContext(),
-    m_shader(asset_path("shaders/triangle.vert"), asset_path("shaders/triangle.frag")),
+    m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
     m_camera(glm::vec3(0.0f, 0.0f, 5.0f))
     {
         // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
-        m_window.get_framebuffer_size(fbWidth, fbHeight);
+        m_window.getFramebufferSize(fbWidth, fbHeight);
         glViewport(0, 0, fbWidth, fbHeight);
 
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
-        glfwSetInputMode(m_window.get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwGetCursorPos(m_window.get_window(), &m_lastMouseX, &m_lastMouseY);
+        glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
 
         m_lastFrameTime = static_cast<float>(glfwGetTime());
     }
@@ -99,39 +99,39 @@ namespace Stellar
             const float deltaTime = time - m_lastFrameTime;
             m_lastFrameTime = time;
 
-            process_input(deltaTime);
+            processInput(deltaTime);
 
             render();
 
-            m_window.swap_buffers();
-            Window::poll_events();
+            m_window.swapBuffers();
+            Window::pollEvents();
         }
     }
 
-    void Application::process_input(float deltaTime)
+    void Application::processInput(float deltaTime)
     {
-        if (glfwGetKey(m_window.get_window(), GLFW_KEY_W) == GLFW_PRESS)
+        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_W) == GLFW_PRESS)
         {
-            m_camera.move_forward(moveSpeed * deltaTime);
+            m_camera.moveForward(MOVE_SPEED * deltaTime);
         }
 
-        if (glfwGetKey(m_window.get_window(), GLFW_KEY_D) == GLFW_PRESS)
+        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_D) == GLFW_PRESS)
         {
-            m_camera.move_right(moveSpeed * deltaTime);
+            m_camera.moveRight(MOVE_SPEED * deltaTime);
         }
 
-        if (glfwGetKey(m_window.get_window(), GLFW_KEY_S) == GLFW_PRESS)
+        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_S) == GLFW_PRESS)
         {
-            m_camera.move_forward(-moveSpeed * deltaTime);
+            m_camera.moveForward(-MOVE_SPEED * deltaTime);
         }
 
-        if (glfwGetKey(m_window.get_window(), GLFW_KEY_A) == GLFW_PRESS)
+        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_A) == GLFW_PRESS)
         {
-            m_camera.move_right(-moveSpeed * deltaTime);
+            m_camera.moveRight(-MOVE_SPEED * deltaTime);
         }
 
         double mouseX = 0, mouseY = 0;
-        glfwGetCursorPos(m_window.get_window(), &mouseX, &mouseY);
+        glfwGetCursorPos(m_window.getHandle(), &mouseX, &mouseY);
 
         double offsetX = mouseX - m_lastMouseX;
         double offsetY = m_lastMouseY - mouseY;
@@ -139,8 +139,8 @@ namespace Stellar
         m_lastMouseX = mouseX;
         m_lastMouseY = mouseY;
 
-        offsetX = offsetX * mouseSensitivity;
-        offsetY = offsetY * mouseSensitivity;
+        offsetX = offsetX * MOUSE_SENSITIVITY;
+        offsetY = offsetY * MOUSE_SENSITIVITY;
 
         m_camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
     }
@@ -152,26 +152,26 @@ namespace Stellar
         m_shader.use();
 
         // COLOR
-        m_shader.set_vec3("uColor", 1.0f, 1.0f, 1.0f);
+        m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL
         constexpr auto modelMatrix = glm::mat4(1.0f);
-        m_shader.set_mat4("uModel", glm::value_ptr(modelMatrix));
+        m_shader.setMat4("uModel", glm::value_ptr(modelMatrix));
 
         // VIEW
-        const auto viewMatrix = m_camera.get_view_matrix();
-        m_shader.set_mat4("uView", glm::value_ptr(viewMatrix));
+        const auto viewMatrix = m_camera.getViewMatrix();
+        m_shader.setMat4("uView", glm::value_ptr(viewMatrix));
 
         // PROJECTION
         int fbWidth = 0, fbHeight = 0;
-        m_window.get_framebuffer_size(fbWidth, fbHeight);
+        m_window.getFramebufferSize(fbWidth, fbHeight);
 
         const float aspectRatio = (fbHeight > 0)
             ? static_cast<float>(fbWidth) / static_cast<float>(fbHeight)
             : 1.0f;
 
         const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-        m_shader.set_mat4("uProjection", glm::value_ptr(projectionMatrix));
+        m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
 
         m_cubeMesh.draw();
     }
