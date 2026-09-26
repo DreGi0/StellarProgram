@@ -68,6 +68,9 @@ constexpr unsigned int CUBE_INDICES[] = {
 constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
 
+constexpr double FIXED_DT = 1.0 / 60.0;
+constexpr float CUBE_ROTATION_SPEED = 2.0f;
+
 namespace Stellar
 {
     Application::Application() :
@@ -89,26 +92,39 @@ namespace Stellar
         glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
 
-        m_lastFrameTime = static_cast<float>(glfwGetTime());
+        m_lastFrameTime = glfwGetTime();
     }
 
     void Application::run()
     {
         while (!m_window.shouldClose()) {
-            const auto time = static_cast<float>(glfwGetTime());
-            const float deltaTime = time - m_lastFrameTime;
+            const auto time = glfwGetTime();
+            double frameTime = time - m_lastFrameTime;
             m_lastFrameTime = time;
 
-            processInput(deltaTime);
+            processInput(static_cast<float>(frameTime));
 
-            render();
+            frameTime = glm::min(frameTime, 0.25);
+            m_accumulatedTime += frameTime;
+
+            while (m_accumulatedTime >= FIXED_DT)
+            {
+                m_previousCubeAngle = m_cubeAngle;
+
+                update(FIXED_DT);
+                m_accumulatedTime -= FIXED_DT;
+            }
+
+            double alpha = m_accumulatedTime / FIXED_DT;
+
+            render(static_cast<float>(alpha));
 
             m_window.swapBuffers();
             Window::pollEvents();
         }
     }
 
-    void Application::processInput(float deltaTime)
+    void Application::processInput(const float deltaTime)
     {
         if (glfwGetKey(m_window.getHandle(), GLFW_KEY_W) == GLFW_PRESS)
         {
@@ -145,7 +161,7 @@ namespace Stellar
         m_camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
     }
 
-    void Application::render() const
+    void Application::render(float alpha) const
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,7 +171,8 @@ namespace Stellar
         m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL
-        constexpr auto modelMatrix = glm::mat4(1.0f);
+        const float angle = m_previousCubeAngle + (m_cubeAngle - m_previousCubeAngle) * alpha;
+        const auto modelMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 1.0f, 0.0f));
         m_shader.setMat4("uModel", glm::value_ptr(modelMatrix));
 
         // VIEW
@@ -174,5 +191,10 @@ namespace Stellar
         m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
 
         m_cubeMesh.draw();
+    }
+
+    void Application::update(const double deltaTime)
+    {
+        m_cubeAngle += CUBE_ROTATION_SPEED *  static_cast<float>(deltaTime);
     }
 } // Stellar

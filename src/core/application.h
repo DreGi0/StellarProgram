@@ -28,11 +28,17 @@ namespace Stellar
         Mesh m_cubeMesh;
         Camera m_camera;
 
-        float  m_lastFrameTime = 0.0f;
+        double  m_lastFrameTime = 0.0;
         double m_lastMouseX = 0.0;
         double m_lastMouseY = 0.0;
 
+        double m_accumulatedTime = 0.0;
+
+        float m_cubeAngle = 0.0f;
+        float m_previousCubeAngle = 0.0f;
+
         void processInput(float deltaTime);
-        void render() const;
+        void render(float alpha) const;
+        void update(double deltaTime);
     };
 } // Stellar
