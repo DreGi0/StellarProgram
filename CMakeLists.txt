@@ -22,7 +22,9 @@ add_library(StellarEngine STATIC
         src/graphics/graphics_context.cpp
         src/graphics/graphics_context.h
         src/core/application.cpp
-        src/core/application.h)
+        src/core/application.h
+        src/ui/debug_overlay.cpp
+        src/ui/debug_overlay.h)
 
 add_executable(StellarProgram src/main.cpp)
 target_link_libraries(StellarProgram PRIVATE StellarEngine)
@@ -32,10 +34,12 @@ target_include_directories(StellarEngine PUBLIC src)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 target_link_libraries(StellarEngine PUBLIC glfw)
 target_link_libraries(StellarEngine PUBLIC glad::glad)
 target_link_libraries(StellarEngine PUBLIC glm::glm)
+target_link_libraries(StellarEngine PRIVATE imgui::imgui)
 
 target_compile_definitions(StellarEngine PUBLIC GLFW_INCLUDE_NONE)
 target_compile_definitions(StellarEngine PRIVATE $<$<CONFIG:Debug>:STELLAR_DEBUG>)
