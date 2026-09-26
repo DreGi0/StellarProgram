@@ -8,7 +8,7 @@
 #pragma once
 
 #include <cstddef>
-#include <GL/gl.h>
+#include <glad/glad.h>
 
 namespace Stellar {
     /**
