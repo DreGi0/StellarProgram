@@ -30,5 +30,9 @@ namespace Stellar
             void moveRight(float distance);
 
             void rotate(float yawOffset, float pitchOffset);
+
+            [[nodiscard]] glm::vec3 getPosition() const { return m_position; }
+
+            [[nodiscard]] glm::vec3 getForward() const { return m_forward; }
     };
 } // Stellar

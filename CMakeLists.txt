@@ -60,7 +60,8 @@ target_compile_options(StellarProgram PRIVATE
 
 find_package(Catch2 3 CONFIG REQUIRED)
 
-add_executable(StellarTests tests/sanity_tests.cpp)
+add_executable(StellarTests tests/sanity_tests.cpp
+        tests/camera_tests.cpp)
 target_link_libraries(StellarTests PRIVATE StellarEngine Catch2::Catch2WithMain)
 
 enable_testing()
