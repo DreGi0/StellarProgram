@@ -18,7 +18,11 @@ add_executable(StellarProgram src/main.cpp
         src/graphics/gl_debug.cpp
         src/graphics/gl_debug.h
         src/graphics/camera.cpp
-        src/graphics/camera.h)
+        src/graphics/camera.h
+        src/graphics/graphics_context.cpp
+        src/graphics/graphics_context.h
+        src/core/application.cpp
+        src/core/application.h)
 
 add_custom_command(TARGET StellarProgram POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -31,6 +35,8 @@ target_compile_options(StellarProgram PRIVATE
         -Wpedantic
 )
 
+target_include_directories(StellarProgram PRIVATE src)
+
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(StellarProgram PRIVATE glfw)
 
@@ -41,3 +47,4 @@ find_package(glm CONFIG REQUIRED)
 target_link_libraries(StellarProgram PRIVATE glm::glm)
 
 target_compile_definitions(StellarProgram PRIVATE $<$<CONFIG:Debug>:STELLAR_DEBUG>)
+target_compile_definitions(StellarProgram PRIVATE GLFW_INCLUDE_NONE)

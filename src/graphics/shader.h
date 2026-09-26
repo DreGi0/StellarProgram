@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <GL/gl.h>
+#include <glad/glad.h>
 
 namespace Stellar {
     /**

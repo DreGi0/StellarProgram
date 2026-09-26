@@ -47,6 +47,7 @@ namespace Stellar {
         }
 
         m_programId = program;
+        printf("[Shader] Program created OK (id=%u)\n", m_programId);
     }
 
     Shader::Shader(Shader &&other) noexcept :
