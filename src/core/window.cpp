@@ -38,39 +38,39 @@ namespace Stellar {
         glfwSwapInterval(1); // Enable V-Sync by default
 
         // Bind event callbacks to active window
-        glfwSetKeyCallback(m_handle.get(), key_callback);
-        glfwSetFramebufferSizeCallback(m_handle.get(), framebuffer_size_callback);
+        glfwSetKeyCallback(m_handle.get(), keyCallback);
+        glfwSetFramebufferSizeCallback(m_handle.get(), framebufferSizeCallback);
     }
 
     bool Window::shouldClose() const noexcept {
         return glfwWindowShouldClose(m_handle.get());
     }
 
-    void Window::swap_buffers() const {
+    void Window::swapBuffers() const {
         glfwSwapBuffers(m_handle.get());
     }
 
-    void Window::poll_events() {
+    void Window::pollEvents() {
         glfwPollEvents();
     }
 
-    void Window::get_framebuffer_size(int &width, int &height) const {
+    void Window::getFramebufferSize(int &width, int &height) const {
         glfwGetFramebufferSize(m_handle.get(), &width, &height);
     }
 
     // ----- CALLBACKS ----------
-    void Window::error_callback(int /*error*/, const char *description) {
+    void Window::errorCallback(int /*error*/, const char *description) {
         fprintf(stderr, "Error: %s\n", description);
     }
 
-    void Window::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
         // Close window on ESC key pressed
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
     }
 
-    void Window::framebuffer_size_callback(GLFWwindow *window, const int width, const int height) {
+    void Window::framebufferSizeCallback(GLFWwindow *window, const int width, const int height) {
         glViewport(0, 0, width, height);
     }
 } // Stellar

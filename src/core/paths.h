@@ -19,5 +19,5 @@ namespace Stellar {
      * @param relative The relative path to the asset (e.g., "textures/ship.png").
      * @return The absolute path to the asset as a string.
      */
-    std::string asset_path(const std::string& relative);
+    std::string assetPath(const std::string& relative);
 } // Stellar

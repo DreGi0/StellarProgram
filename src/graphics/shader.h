@@ -53,40 +53,40 @@ namespace Stellar {
          * @param name Uniform name as declared in the shader source.
          * @param value Value to upload.
          */
-        void set_float(const char* name, float value) const;
+        void setFloat(const char* name, float value) const;
 
         /**
          * @brief Sets a 3-component vector uniform in the shader.
          * @param name Uniform name as declared in the shader source.
          * @param x,y,z Vector components.
          */
-        void set_vec3(const std::string& name, float x, float y, float z) const;
+        void setVec3(const std::string& name, float x, float y, float z) const;
 
         /**
          * @brief Sets a 4x4 matrix uniform in the shader.
          * @param name Uniform name as declared in the shader source.
          * @param matrixData Pointer to 16 floats in column-major order.
          */
-        void set_mat4(const std::string& name, const float* matrixData) const;
+        void setMat4(const std::string& name, const float* matrixData) const;
 
         /**
          * @brief Retrieves the underlying OpenGL program ID.
          * @return The OpenGL program handle.
          */
-        [[nodiscard]] GLuint get_id() const { return m_programId; }
+        [[nodiscard]] GLuint getId() const { return m_programId; }
     private:
         GLuint m_programId = 0;
 
         // Cache to avoid repeated string hashing and OpenGL lookups for uniforms
         mutable std::unordered_map<std::string, GLint> m_uniformLocationCache;
 
-        static GLuint compile_shader(GLenum type, const char* src);
-        static std::string read_file(const std::string& path);
+        static GLuint compileShader(GLenum type, const char* src);
+        static std::string readFile(const std::string& path);
 
-        static std::string get_shader_info_log(GLuint shader);
-        static std::string get_program_info_log(GLuint program);
+        static std::string getShaderInfoLog(GLuint shader);
+        static std::string getProgramInfoLog(GLuint program);
 
-        GLint get_uniform_location(const std::string& name) const;
+        GLint getUniformLocation(const std::string& name) const;
     };
 } // Stellar
 

@@ -15,7 +15,7 @@ namespace Stellar {
     namespace fs = std::filesystem;
 
     /// Returns the directory containing the running executable.
-    static fs::path executable_dir() {
+    static fs::path executableDir() {
 #ifdef _WIN32
         wchar_t path[MAX_PATH];
         GetModuleFileNameW(nullptr, path, MAX_PATH);
@@ -28,8 +28,8 @@ namespace Stellar {
 #endif
     }
 
-    std::string asset_path(const std::string &relative) {
-        static const fs::path root = executable_dir() / "assets";
+    std::string assetPath(const std::string &relative) {
+        static const fs::path root = executableDir() / "assets";
         return (root / relative).string();
     }
 } // Stellar
