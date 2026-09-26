@@ -69,7 +69,7 @@ constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
-constexpr float CUBE_ROTATION_SPEED = 2.0f;
+constexpr float CUBE_ROTATION_SPEED = 1.0f;
 
 namespace Stellar
 {
@@ -78,7 +78,8 @@ namespace Stellar
     m_graphicsContext(),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
-    m_camera(glm::vec3(0.0f, 0.0f, 5.0f))
+    m_camera(glm::dvec3(10'000'000, 0.0f, 5.0f)),
+    m_cubePosition(glm::dvec3(10'000'000, 0.0f, 0.0f))
     {
         // Viewport adjustment
         int fbWidth = 0;
@@ -161,7 +162,7 @@ namespace Stellar
         m_camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
     }
 
-    void Application::render(float alpha) const
+    void Application::render(const float alpha) const
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -171,8 +172,11 @@ namespace Stellar
         m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL
+        const glm::dvec3 cubeRelativePositionToCam = m_cubePosition - m_camera.getPosition();
+
         const float angle = m_previousCubeAngle + (m_cubeAngle - m_previousCubeAngle) * alpha;
-        const auto modelMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 1.0f, 0.0f));
+        const auto modelMatrix = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(cubeRelativePositionToCam)), angle, m_cubeRotationAxis);
+
         m_shader.setMat4("uModel", glm::value_ptr(modelMatrix));
 
         // VIEW

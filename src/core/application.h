@@ -34,6 +34,9 @@ namespace Stellar
 
         double m_accumulatedTime = 0.0;
 
+        glm::dvec3 m_cubePosition = glm::dvec3(0.0);
+        glm::vec3 m_cubeRotationAxis = glm::vec3(1.0f, 1.0f, 0.0f);
+
         float m_cubeAngle = 0.0f;
         float m_previousCubeAngle = 0.0f;
 
