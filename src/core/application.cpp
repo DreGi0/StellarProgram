@@ -12,6 +12,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "application.h"
+
+#include <imgui.h>
+
 #include "core/paths.h"
 
 
@@ -76,6 +79,7 @@ namespace Stellar
     Application::Application() :
     m_window(800, 600, "Stellar Program"),
     m_graphicsContext(),
+    m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
     m_camera(glm::dvec3(10'000'000, 0.0f, 5.0f)),
@@ -90,8 +94,8 @@ namespace Stellar
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
-        glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
+        glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         m_lastFrameTime = glfwGetTime();
     }
@@ -116,7 +120,7 @@ namespace Stellar
                 m_accumulatedTime -= FIXED_DT;
             }
 
-            double alpha = m_accumulatedTime / FIXED_DT;
+            const double alpha = m_accumulatedTime / FIXED_DT;
 
             render(static_cast<float>(alpha));
 
@@ -127,6 +131,23 @@ namespace Stellar
 
     void Application::processInput(const float deltaTime)
     {
+        const bool tabIsPressed = glfwGetKey(m_window.getHandle(), GLFW_KEY_TAB) == GLFW_PRESS;
+
+        if (tabIsPressed && !m_tabWasPressed)
+        {
+            m_cursorCaptured = !m_cursorCaptured;
+            glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
+        }
+
+        m_tabWasPressed = tabIsPressed;
+
+        if (!m_cursorCaptured)
+        {
+            glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            return;
+        }
+
         if (glfwGetKey(m_window.getHandle(), GLFW_KEY_W) == GLFW_PRESS)
         {
             m_camera.moveForward(MOVE_SPEED * deltaTime);
@@ -195,6 +216,18 @@ namespace Stellar
         m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
 
         m_cubeMesh.draw();
+
+        m_debugOverlay.beginFrame();
+
+        ImGui::Begin("Debug");
+        ImGui::Text("Stellar Program");
+        ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+        ImGui::Text("Camera Position:\nX %.3f, Y %.3f, Z %.3f", m_camera.getPosition().x, m_camera.getPosition().y, m_camera.getPosition().z);
+        ImGui::Text("Cube Angle: %.3f", glm::mod(m_cubeAngle, glm::two_pi<float>()));
+
+        ImGui::End();
+
+        m_debugOverlay.endFrame();
     }
 
     void Application::update(const double deltaTime)

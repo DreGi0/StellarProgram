@@ -12,6 +12,7 @@
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
 #include "graphics/camera.h"
+#include "ui/debug_overlay.h"
 
 namespace Stellar
 {
@@ -24,6 +25,7 @@ namespace Stellar
         // ORDER MATTERS: constructed top to bottom and destroyed bottom to top
         Window m_window;
         GraphicsContext m_graphicsContext;
+        DebugOverlay m_debugOverlay;
         Shader m_shader;
         Mesh m_cubeMesh;
         Camera m_camera;
@@ -39,6 +41,9 @@ namespace Stellar
 
         float m_cubeAngle = 0.0f;
         float m_previousCubeAngle = 0.0f;
+
+        bool m_cursorCaptured = true;
+        bool m_tabWasPressed = false;
 
         void processInput(float deltaTime);
         void render(float alpha) const;
