@@ -31,5 +31,8 @@ namespace Stellar
         float  m_lastFrameTime = 0.0f;
         double m_lastMouseX = 0.0;
         double m_lastMouseY = 0.0;
+
+        void process_input(float deltaTime);
+        void render() const;
     };
 } // Stellar
