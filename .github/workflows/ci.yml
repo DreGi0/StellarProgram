@@ -16,7 +16,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build pkg-config \
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-            libgl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols
+            libgl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols \
+            autoconf autoconf-archive automake libtool
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
