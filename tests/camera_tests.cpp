@@ -13,29 +13,29 @@
 #include "graphics/camera.h"
 
 TEST_CASE("moveForward moves along the forward direction") {
-    Stellar::Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+    Stellar::Camera camera(glm::dvec3(0.0, 0.0, 5.0));
 
     camera.moveForward(1.0f);
 
-    const glm::vec3 pos = camera.getPosition();
+    const glm::dvec3 pos = camera.getPosition();
     REQUIRE(pos.x == Catch::Approx(0.0f));
     REQUIRE(pos.y == Catch::Approx(0.0f));
     REQUIRE(pos.z == Catch::Approx(4.0f));
 }
 
 TEST_CASE("moveRight moves along to the right direction") {
-    Stellar::Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+    Stellar::Camera camera(glm::dvec3(0.0, 0.0, 5.0));
 
     camera.moveRight(1.0f);
 
-    const glm::vec3 pos = camera.getPosition();
+    const glm::dvec3 pos = camera.getPosition();
     REQUIRE(pos.x == Catch::Approx(1.0f));
     REQUIRE(pos.y == Catch::Approx(0.0f));
     REQUIRE(pos.z == Catch::Approx(5.0f));
 }
 
 TEST_CASE("pitch is limited") {
-    Stellar::Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+    Stellar::Camera camera(glm::dvec3(0.0, 0.0, 5.0));
 
     camera.rotate(0.0f, 1000.0f );
 
@@ -44,9 +44,17 @@ TEST_CASE("pitch is limited") {
 }
 
 TEST_CASE("forward always 1") {
-    Stellar::Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+    Stellar::Camera camera(glm::dvec3(0.0, 0.0, 5.0));
 
     camera.rotate(37.0f, -12.0f);
 
     REQUIRE(glm::length(camera.getForward())== Catch::Approx(1.0f));
+}
+
+TEST_CASE("double precision") {
+    Stellar::Camera camera(glm::dvec3(10'000'000, 0, 0));
+
+    camera.moveForward(0.01f);
+
+    REQUIRE(camera.getPosition().z == Catch::Approx(-0.01));
 }

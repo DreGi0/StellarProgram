@@ -11,14 +11,14 @@
 
 namespace Stellar
 {
-    Camera::Camera(const glm::vec3 position)
+    Camera::Camera(const glm::dvec3& position)
     {
         m_position = position;
     }
 
     glm::mat4 Camera::getViewMatrix() const
     {
-        return glm::lookAt(m_position,  m_position + m_forward, m_up);
+        return glm::lookAt(glm::vec3(0.0f), m_forward, m_up);
     }
 
     void Camera::moveForward(const float distance)
@@ -31,7 +31,7 @@ namespace Stellar
         m_position += glm::normalize(glm::cross(m_forward, m_up)) * distance;
     }
 
-    void Camera::rotate(float yawOffset, float pitchOffset)
+    void Camera::rotate(const float yawOffset, const float pitchOffset)
     {
         m_yaw += yawOffset;
         m_pitch += pitchOffset;

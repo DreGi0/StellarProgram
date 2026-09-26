@@ -14,14 +14,14 @@ namespace Stellar
     class Camera
     {
         private:
-            glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 3.0f);
+            glm::dvec3 m_position = glm::dvec3(0.0, 0.0, 3.0);
             glm::vec3 m_forward = glm::vec3(0.0f, 0.0f, -1.0f);
             glm::vec3 m_up = glm::vec3(0.0f, 1.0f, 0.0f);
             float m_yaw = -90.0f;
             float m_pitch = 0.0f;
 
         public:
-            explicit Camera(glm::vec3 position);
+            explicit Camera(const glm::dvec3& position);
 
             [[nodiscard]] glm::mat4 getViewMatrix() const;
 
@@ -31,7 +31,7 @@ namespace Stellar
 
             void rotate(float yawOffset, float pitchOffset);
 
-            [[nodiscard]] glm::vec3 getPosition() const { return m_position; }
+            [[nodiscard]] glm::dvec3 getPosition() const { return m_position; }
 
             [[nodiscard]] glm::vec3 getForward() const { return m_forward; }
     };
