@@ -92,12 +92,14 @@ constexpr Stellar::StepFunction INTEGRATORS[] = {
     Stellar::stepExplicitEuler,
     Stellar::stepSemiImplicitEuler,
     Stellar::stepVelocityVerlet,
+    Stellar::stepKepler,
 };
 
 constexpr const char* INTEGRATOR_NAMES[] = {
     "Explicit Euler",
     "Semi-implicit Euler",
     "Velocity Verlet",
+    "Kepler (on rails)",
 };
 
 namespace Stellar
