@@ -39,5 +39,7 @@ namespace Stellar
 
     OrbitalElements stateToElements(const OrbitalState& state, double mu);
 
+    OrbitalState elementsToState(const OrbitalElements& elements, double mu);
+
     using StepFunction = OrbitalState (*)(const OrbitalState&, double, double);
 } // Stellar

@@ -7,8 +7,10 @@
 
 #include "orbit.h"
 
+#include <cmath>
 #include <glm/geometric.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace
 {
@@ -109,5 +111,32 @@ namespace Stellar
         elements.trueAnomaly = angleAround(periapsisDir, r, hDir);
 
         return elements;
+    }
+
+    OrbitalState elementsToState(const OrbitalElements& elements, double mu)
+    {
+        const double a = elements.semiMajorAxis;
+        const double e = elements.eccentricity;
+        const double nu = elements.trueAnomaly;
+
+        // Semi-latus rectum
+        const double p = a * (1.0 - e * e);
+        const double r = p / (1.0 + e * glm::cos(nu));
+
+        // Perifocal frame
+        const glm::dvec3 positionFlat(r * glm::cos(nu), r * glm::sin(nu), 0.0);
+        const glm::dvec3 velocityFlat = glm::sqrt(mu / p) * glm::dvec3(-glm::sin(nu), e + glm::cos(nu), 0.0);
+
+        // Rotate the flat ellipse into place
+        glm::dmat4 rotation(1.0);
+        rotation = glm::rotate(rotation, elements.longitudeOfAscendingNode, glm::dvec3(0.0, 0.0, 1.0));
+        rotation = glm::rotate(rotation, elements.inclination, glm::dvec3(1.0, 0.0, 0.0));
+        rotation = glm::rotate(rotation, elements.argumentOfPeriapsis, glm::dvec3(0.0, 0.0, 1.0));
+
+        // w = 0: directions only, no translation
+        return {
+            .position = glm::dvec3(rotation * glm::dvec4(positionFlat, 0.0)),
+            .velocity = glm::dvec3(rotation * glm::dvec4(velocityFlat, 0.0)),
+        };
     }
 } // Stellar
