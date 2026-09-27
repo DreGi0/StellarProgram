@@ -36,6 +36,13 @@ namespace Stellar
 
     OrbitalState stepVelocityVerlet(const OrbitalState& current, double mu, double dt);
 
+    // Velocity Verlet with an extra constant acceleration from the engine (thrust / mass)
+    OrbitalState stepVelocityVerletWithThrust(const OrbitalState& current, double mu, double dt, const glm::dvec3& thrust);
+
+    // Unit vector to point the engine at. prograde: +1 forward / -1 backward along the velocity.
+    // normal: +1 / -1 perpendicular to the orbit plane (tilts the orbit). Zero vector if both are 0
+    glm::dvec3 burnDirection(const OrbitalState& state, double prograde, double normal);
+
     double specificEnergy(const OrbitalState& state, double mu);
 
     OrbitalElements stateToElements(const OrbitalState& state, double mu);

@@ -44,6 +44,22 @@ namespace
 
         return maxDrift;
     }
+
+
+    // Burns for one second from the scene's circular orbit (r = 10, v = 10), pointing the
+    // engine the same way the game does, and returns the new orbit
+    Stellar::OrbitalElements burnOneSecond(const double prograde, const double normal)
+    {
+        Stellar::OrbitalState state{glm::dvec3(10.0, 0.0, 0.0), glm::dvec3(0.0, 10.0, 0.0)};
+
+        for (int i = 0; i < 60; ++i)
+        {
+            const glm::dvec3 thrust = 2.0 * Stellar::burnDirection(state, prograde, normal);
+            state = Stellar::stepVelocityVerletWithThrust(state, 1000.0, 1.0 / 60.0, thrust);
+        }
+
+        return Stellar::stateToElements(state, 1000.0);
+    }
 }
 
 TEST_CASE("gravity points to center on axis")
@@ -273,4 +289,36 @@ TEST_CASE("Kepler: one big step equals many small steps (time warp)")
     REQUIRE(big.position.x == Catch::Approx(small.position.x).margin(1e-9));
     REQUIRE(big.position.y == Catch::Approx(small.position.y).margin(1e-9));
     REQUIRE(big.position.z == Catch::Approx(small.position.z).margin(1e-9));
+}
+
+TEST_CASE("no burn input gives no thrust")
+{
+    const Stellar::OrbitalState state{glm::dvec3(10.0, 0.0, 0.0), glm::dvec3(0.0, 10.0, 0.0)};
+
+    REQUIRE(glm::length(Stellar::burnDirection(state, 0.0, 0.0)) == 0.0);
+}
+
+TEST_CASE("prograde burn raises the orbit")
+{
+    const Stellar::OrbitalElements after = burnOneSecond(1.0, 0.0);
+
+    REQUIRE(after.semiMajorAxis > 10.0);
+    REQUIRE(after.semiMajorAxis * (1.0 + after.eccentricity) > 13.0); // apoapsis went up
+    REQUIRE(after.inclination == Catch::Approx(0.0).margin(1e-12));   // still flat
+}
+
+TEST_CASE("retrograde burn lowers the orbit")
+{
+    const Stellar::OrbitalElements after = burnOneSecond(-1.0, 0.0);
+
+    REQUIRE(after.semiMajorAxis < 10.0);
+    REQUIRE(after.semiMajorAxis * (1.0 - after.eccentricity) < 8.0); // periapsis went down
+}
+
+TEST_CASE("normal burn tilts the orbit")
+{
+    const Stellar::OrbitalElements after = burnOneSecond(0.0, 1.0);
+
+    REQUIRE(glm::degrees(after.inclination) > 5.0);
+    REQUIRE(after.semiMajorAxis == Catch::Approx(10.0).epsilon(0.1)); // size barely changes
 }
