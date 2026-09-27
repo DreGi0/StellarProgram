@@ -15,9 +15,7 @@
 
 namespace
 {
-    using StepFunction = Stellar::OrbitalState (*)(const Stellar::OrbitalState&, double, double);
-
-    double maxEnergyDrift(const StepFunction step)
+    double maxEnergyDrift(const Stellar::StepFunction step)
     {
         constexpr double mu = 1000.0;
         constexpr double dt = 1.0 / 60.0;

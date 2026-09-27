@@ -12,6 +12,7 @@
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
 #include "graphics/camera.h"
+#include "physics/orbit.h"
 #include "ui/debug_overlay.h"
 
 namespace Stellar
@@ -36,17 +37,18 @@ namespace Stellar
 
         double m_accumulatedTime = 0.0;
 
-        glm::dvec3 m_cubePosition = glm::dvec3(0.0);
-        glm::vec3 m_cubeRotationAxis = glm::vec3(1.0f, 1.0f, 0.0f);
-
-        float m_cubeAngle = 0.0f;
-        float m_previousCubeAngle = 0.0f;
+        OrbitalState m_orbitState{};
+        glm::dvec3 m_previousOrbitPosition = glm::dvec3(0.0);
+        double m_initialEnergy = 0.0;
+        // 0: Explicit Euler, 1:SemiImplicitEuler 2: Velocity Verlet
+        int m_integratorIndex = 2;
 
         bool m_cursorCaptured = true;
         bool m_tabWasPressed = false;
 
         void processInput(float deltaTime);
-        void render(float alpha) const;
+        void render(float alpha);
         void update(double deltaTime);
+        void resetOrbit();
     };
 } // Stellar

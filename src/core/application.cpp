@@ -72,7 +72,23 @@ constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
-constexpr float CUBE_ROTATION_SPEED = 1.0f;
+
+// Orbit (toy units: r = 10, v = 10 -> which is one lap every 2*pi seconds)
+constexpr double ORBIT_MU = 1000.0;
+constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
+
+// note: it only needs one (Velocity Verlet), but since I'm trying to see what happens on each
+constexpr Stellar::StepFunction INTEGRATORS[] = {
+    Stellar::stepExplicitEuler,
+    Stellar::stepSemiImplicitEuler,
+    Stellar::stepVelocityVerlet,
+};
+
+constexpr const char* INTEGRATOR_NAMES[] = {
+    "Explicit Euler",
+    "Semi-implicit Euler",
+    "Velocity Verlet",
+};
 
 namespace Stellar
 {
@@ -82,9 +98,10 @@ namespace Stellar
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
-    m_camera(glm::dvec3(10'000'000, 0.0f, 5.0f)),
-    m_cubePosition(glm::dvec3(10'000'000, 0.0f, 0.0f))
+    m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f))
     {
+        resetOrbit();
+
         // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
@@ -114,7 +131,7 @@ namespace Stellar
 
             while (m_accumulatedTime >= FIXED_DT)
             {
-                m_previousCubeAngle = m_cubeAngle;
+                m_previousOrbitPosition = m_orbitState.position;
 
                 update(FIXED_DT);
                 m_accumulatedTime -= FIXED_DT;
@@ -183,7 +200,7 @@ namespace Stellar
         m_camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
     }
 
-    void Application::render(const float alpha) const
+    void Application::render(const float alpha)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -191,14 +208,6 @@ namespace Stellar
 
         // COLOR
         m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
-
-        // MODEL
-        const glm::dvec3 cubeRelativePositionToCam = m_cubePosition - m_camera.getPosition();
-
-        const float angle = m_previousCubeAngle + (m_cubeAngle - m_previousCubeAngle) * alpha;
-        const auto modelMatrix = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(cubeRelativePositionToCam)), angle, m_cubeRotationAxis);
-
-        m_shader.setMat4("uModel", glm::value_ptr(modelMatrix));
 
         // VIEW
         const auto viewMatrix = m_camera.getViewMatrix();
@@ -215,7 +224,24 @@ namespace Stellar
         const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
         m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
 
+        // MODEL - "Earth"
+        const glm::dvec3 centralRelativeToCam = CENTRAL_BODY_POSITION - m_camera.getPosition();
+        const auto centralModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam)), glm::vec3(2.0f));
+
+        m_shader.setMat4("uModel", glm::value_ptr(centralModel));
         m_cubeMesh.draw();
+
+        // MODEL - "Earth's Satellite"
+        const glm::dvec3 orbitPosition = glm::mix(m_previousOrbitPosition, m_orbitState.position, static_cast<double>(alpha));
+        const glm::dvec3 orbiterRelativeToCam = CENTRAL_BODY_POSITION + orbitPosition - m_camera.getPosition();
+        const auto orbiterModel = glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam));
+
+        m_shader.setMat4("uModel", glm::value_ptr(orbiterModel));
+        m_cubeMesh.draw();
+
+        // DEBUG OVERLAY
+        const double energy = specificEnergy(m_orbitState, ORBIT_MU);
+        const double drift = glm::abs(energy - m_initialEnergy) / glm::abs(m_initialEnergy);
 
         m_debugOverlay.beginFrame();
 
@@ -223,7 +249,22 @@ namespace Stellar
         ImGui::Text("Stellar Program");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
         ImGui::Text("Camera Position:\nX %.3f, Y %.3f, Z %.3f", m_camera.getPosition().x, m_camera.getPosition().y, m_camera.getPosition().z);
-        ImGui::Text("Cube Angle: %.3f", glm::mod(m_cubeAngle, glm::two_pi<float>()));
+
+        ImGui::Separator();
+
+        if (ImGui::Combo("Integrator", &m_integratorIndex, INTEGRATOR_NAMES, IM_ARRAYSIZE(INTEGRATOR_NAMES)))
+        {
+            resetOrbit();
+        }
+
+        if (ImGui::Button("Reset orbit"))
+        {
+            resetOrbit();
+        }
+
+        ImGui::Text("Orbit radius: %.4f", glm::length(m_orbitState.position));
+        ImGui::Text("Energy: %.6f", energy);
+        ImGui::Text("Energy drift: %.12f", drift);
 
         ImGui::End();
 
@@ -232,6 +273,13 @@ namespace Stellar
 
     void Application::update(const double deltaTime)
     {
-        m_cubeAngle += CUBE_ROTATION_SPEED *  static_cast<float>(deltaTime);
+        m_orbitState = INTEGRATORS[m_integratorIndex](m_orbitState, ORBIT_MU, deltaTime);
+    }
+
+    void Application::resetOrbit()
+    {
+        m_orbitState = {glm::dvec3(10.0, 0.0, 0.0), glm::dvec3(0.0, 10.0, 0.0)};
+        m_previousOrbitPosition = m_orbitState.position;
+        m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
     }
 } // Stellar

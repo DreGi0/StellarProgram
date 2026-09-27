@@ -26,4 +26,6 @@ namespace Stellar
     OrbitalState stepVelocityVerlet(const OrbitalState& current, double mu, double dt);
 
     double specificEnergy(const OrbitalState& state, double mu);
+
+    using StepFunction = OrbitalState (*)(const OrbitalState&, double, double);
 } // Stellar
