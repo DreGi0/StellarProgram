@@ -142,6 +142,31 @@ namespace Stellar
         return elements;
     }
 
+    glm::dmat4 orbitRotation(const OrbitalElements& elements)
+    {
+        glm::dmat4 rotation(1.0);
+        rotation = glm::rotate(rotation, elements.longitudeOfAscendingNode, glm::dvec3(0.0, 0.0, 1.0));
+        rotation = glm::rotate(rotation, elements.inclination, glm::dvec3(1.0, 0.0, 0.0));
+        rotation = glm::rotate(rotation, elements.argumentOfPeriapsis, glm::dvec3(0.0, 0.0, 1.0));
+
+        return rotation;
+    }
+
+    glm::dmat4 orbitEllipseMatrix(const OrbitalElements& elements)
+    {
+        const double a = elements.semiMajorAxis;
+        const double e = elements.eccentricity;
+        const double b = a * std::sqrt(1.0 - e * e); // half of the ellipse's short side
+
+        // Stretch the circle into an ellipse, make the "planet" be the center,
+        // then rotate it into place
+        glm::dmat4 matrix = orbitRotation(elements);
+        matrix = glm::translate(matrix, glm::dvec3(-a * e, 0.0, 0.0));
+        matrix = glm::scale(matrix, glm::dvec3(a, b, 1.0));
+
+        return matrix;
+    }
+
     OrbitalState elementsToState(const OrbitalElements& elements, double mu)
     {
         const double a = elements.semiMajorAxis;
@@ -157,10 +182,7 @@ namespace Stellar
         const glm::dvec3 velocityFlat = glm::sqrt(mu / p) * glm::dvec3(-glm::sin(nu), e + glm::cos(nu), 0.0);
 
         // Rotate the flat ellipse into place
-        glm::dmat4 rotation(1.0);
-        rotation = glm::rotate(rotation, elements.longitudeOfAscendingNode, glm::dvec3(0.0, 0.0, 1.0));
-        rotation = glm::rotate(rotation, elements.inclination, glm::dvec3(1.0, 0.0, 0.0));
-        rotation = glm::rotate(rotation, elements.argumentOfPeriapsis, glm::dvec3(0.0, 0.0, 1.0));
+        const glm::dmat4 rotation = orbitRotation(elements);
 
         // w = 0: directions only, no translation
         return {

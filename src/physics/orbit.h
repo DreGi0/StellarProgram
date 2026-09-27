@@ -8,6 +8,7 @@
 #pragma once
 
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace Stellar
 {
@@ -38,6 +39,10 @@ namespace Stellar
     double specificEnergy(const OrbitalState& state, double mu);
 
     OrbitalElements stateToElements(const OrbitalState& state, double mu);
+
+    glm::dmat4 orbitRotation(const OrbitalElements& elements);
+
+    glm::dmat4 orbitEllipseMatrix(const OrbitalElements& elements);
 
     OrbitalState elementsToState(const OrbitalElements& elements, double mu);
 

@@ -225,3 +225,33 @@ TEST_CASE("Kepler agrees with Verlet using tiny steps")
     REQUIRE(kepler.position.y == Catch::Approx(verlet.position.y).margin(1e-5));
     REQUIRE(kepler.position.z == Catch::Approx(verlet.position.z).margin(1e-5));
 }
+
+TEST_CASE("orbit ellipse matrix maps the unit circle onto the orbit")
+{
+    Stellar::OrbitalElements orbit {
+        .semiMajorAxis = 10.0,
+        .eccentricity = 0.3,
+        .inclination = 0.5,
+        .longitudeOfAscendingNode = 1.0,
+        .argumentOfPeriapsis = 2.0,
+        .trueAnomaly = 0.0
+    };
+    const glm::dmat4 matrix = Stellar::orbitEllipseMatrix(orbit);
+
+    // Circle point at 0 lands on periapsis
+    const glm::dvec3 periapsis = Stellar::elementsToState(orbit, 1000.0).position;
+    const glm::dvec3 mappedPeriapsis(matrix * glm::dvec4(1.0, 0.0, 0.0, 1.0));
+
+    REQUIRE(mappedPeriapsis.x == Catch::Approx(periapsis.x));
+    REQUIRE(mappedPeriapsis.y == Catch::Approx(periapsis.y));
+    REQUIRE(mappedPeriapsis.z == Catch::Approx(periapsis.z));
+
+    // Circle point at 180 lands on apoapsis
+    orbit.trueAnomaly = glm::pi<double>();
+    const glm::dvec3 apoapsis = Stellar::elementsToState(orbit, 1000.0).position;
+    const glm::dvec3 mappedApoapsis(matrix * glm::dvec4(-1.0, 0.0, 0.0, 1.0));
+
+    REQUIRE(mappedApoapsis.x == Catch::Approx(apoapsis.x));
+    REQUIRE(mappedApoapsis.y == Catch::Approx(apoapsis.y));
+    REQUIRE(mappedApoapsis.z == Catch::Approx(apoapsis.z));
+}
