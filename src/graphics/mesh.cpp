@@ -10,9 +10,10 @@
 #include "mesh.h"
 
 namespace Stellar {
-    Mesh::Mesh(const float* vertices, size_t vertexCount, const unsigned int* indices, size_t indexCount)
+    Mesh::Mesh(const float* vertices, const size_t vertexCount, const unsigned int* indices, const size_t indexCount, const GLenum primitive)
     {
         m_indexCount = indexCount;
+        m_primitive = primitive;
 
         // Reserve IDs for VAO, VBO & EBO
         glGenVertexArrays(1, &m_vao);
@@ -47,6 +48,7 @@ namespace Stellar {
 
     Mesh::Mesh(Mesh &&other) noexcept :
     m_indexCount(other.m_indexCount),
+    m_primitive(other.m_primitive),
     m_vao(other.m_vao),
     m_vbo(other.m_vbo),
     m_ebo(other.m_ebo) {
@@ -69,6 +71,7 @@ namespace Stellar {
 
         // Transfer handle properties
         m_indexCount = other.m_indexCount;
+        m_primitive = other.m_primitive;
         m_vao = other.m_vao;
         m_vbo = other.m_vbo;
         m_ebo = other.m_ebo;
@@ -84,7 +87,7 @@ namespace Stellar {
 
     void Mesh::draw() const {
         glBindVertexArray(m_vao);
-        glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(m_primitive, m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
 
     Mesh::~Mesh() {

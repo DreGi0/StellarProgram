@@ -23,8 +23,9 @@ namespace Stellar {
          * @param vertexCount Total number of vertices to process.
          * @param indices Pointer to index data array (unsigned int).
          * @param indexCount Total number of indices to draw.
+         * @param primitive How the indices are connected: GL_TRIANGLES (default), GL_LINE_LOOP, ...
          */
-        Mesh(const float* vertices, size_t vertexCount, const unsigned int* indices, size_t indexCount);
+        Mesh(const float* vertices, size_t vertexCount, const unsigned int* indices, size_t indexCount, GLenum primitive = GL_TRIANGLES);
 
         // Disable copy to avoid duplicity of OpenGL handles
         Mesh(const Mesh&) = delete;
@@ -54,6 +55,7 @@ namespace Stellar {
         ~Mesh();
     private:
         GLsizei m_indexCount = 0;
+        GLenum m_primitive = GL_TRIANGLES;
         GLuint m_vao = 0;
         GLuint m_vbo = 0;
         GLuint m_ebo = 0;
