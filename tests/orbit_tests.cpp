@@ -172,3 +172,56 @@ TEST_CASE("state -> elements -> state round trip (Curtis example 4.3)")
     REQUIRE(result.velocity.y == Catch::Approx(original.velocity.y));
     REQUIRE(result.velocity.z == Catch::Approx(original.velocity.z));
 }
+
+TEST_CASE("Kepler keeps energy exactly")
+{
+    REQUIRE(maxEnergyDrift(Stellar::stepKepler) < 1e-12);
+}
+
+TEST_CASE("Kepler: half a period takes periapsis to apoapsis")
+{
+    const Stellar::OrbitalElements start{10.0, 0.3, 0.0, 0.0, 0.0, 0.0};
+    const double period = glm::two_pi<double>() * std::sqrt(10.0 * 10.0 * 10.0 / 1000.0);
+
+    const Stellar::OrbitalElements result = Stellar::propagateKepler(start, 1000.0, period / 2.0);
+
+    REQUIRE(result.trueAnomaly == Catch::Approx(glm::pi<double>()));
+}
+
+TEST_CASE("Kepler: a full period comes back to the same place")
+{
+    const Stellar::OrbitalElements start{10.0, 0.3, 0.5, 1.0, 2.0, 1.0};
+    const double period = glm::two_pi<double>() * std::sqrt(10.0 * 10.0 * 10.0 / 1000.0);
+
+    const Stellar::OrbitalElements result = Stellar::propagateKepler(start, 1000.0, period);
+
+    REQUIRE(result.trueAnomaly == Catch::Approx(start.trueAnomaly));
+    REQUIRE(result.semiMajorAxis == start.semiMajorAxis);
+    REQUIRE(result.argumentOfPeriapsis == start.argumentOfPeriapsis);
+}
+
+TEST_CASE("Kepler agrees with Verlet using tiny steps")
+{
+    constexpr Stellar::OrbitalElements start {
+        .semiMajorAxis = 10.0,
+        .eccentricity = 0.3,
+        .inclination = 0.5,
+        .longitudeOfAscendingNode = 1.0,
+        .argumentOfPeriapsis = 2.0,
+        .trueAnomaly = 1.0
+    };
+    constexpr double totalTime = 4.0;
+    constexpr int steps = 40000;
+
+    Stellar::OrbitalState verlet = Stellar::elementsToState(start, 1000.0);
+    for (int i = 0; i < steps; ++i)
+    {
+        verlet = Stellar::stepVelocityVerlet(verlet, 1000.0, totalTime / steps);
+    }
+
+    const Stellar::OrbitalState kepler = Stellar::elementsToState(Stellar::propagateKepler(start, 1000.0, totalTime), 1000.0);
+
+    REQUIRE(kepler.position.x == Catch::Approx(verlet.position.x).margin(1e-5));
+    REQUIRE(kepler.position.y == Catch::Approx(verlet.position.y).margin(1e-5));
+    REQUIRE(kepler.position.z == Catch::Approx(verlet.position.z).margin(1e-5));
+}

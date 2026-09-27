@@ -41,5 +41,9 @@ namespace Stellar
 
     OrbitalState elementsToState(const OrbitalElements& elements, double mu);
 
+    OrbitalElements propagateKepler(const OrbitalElements& elements, double mu, double dt);
+
+    OrbitalState stepKepler(const OrbitalState& current, double mu, double dt);
+
     using StepFunction = OrbitalState (*)(const OrbitalState&, double, double);
 } // Stellar
