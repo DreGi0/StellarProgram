@@ -88,15 +88,33 @@ namespace Stellar
 
     OrbitalState stepVelocityVerlet(const OrbitalState& current, const double mu, const double dt)
     {
+        return stepVelocityVerletWithThrust(current, mu, dt, glm::dvec3(0.0));
+    }
+
+    OrbitalState stepVelocityVerletWithThrust(const OrbitalState& current, double mu, double dt,
+        const glm::dvec3& thrust)
+    {
+
         OrbitalState next{};
 
-        const glm::dvec3 aCurrent = gravityAcceleration(current.position, mu);
+        const glm::dvec3 aCurrent = gravityAcceleration(current.position, mu) + thrust;
         next.position = current.position + current.velocity * dt + 0.5 * aCurrent * (dt * dt);
 
-        const glm::dvec3 aNext = gravityAcceleration(next.position, mu);
+        const glm::dvec3 aNext = gravityAcceleration(next.position, mu) + thrust;
         next.velocity = current.velocity + 0.5 * (aCurrent + aNext) * dt;
 
         return next;
+    }
+
+    glm::dvec3 burnDirection(const OrbitalState& state, double prograde, double normal)
+    {
+        const glm::dvec3 progradeDir = glm::normalize(state.velocity);
+        const glm::dvec3 normalDir = glm::normalize(glm::cross(state.position, state.velocity));
+
+        const glm::dvec3 direction = prograde * progradeDir + normal * normalDir;
+        const double length = glm::length(direction);
+
+        return length > 0.0 ? direction / length : glm::dvec3(0.0);
     }
 
     double specificEnergy(const OrbitalState& state, const double mu)
