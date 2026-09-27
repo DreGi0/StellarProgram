@@ -8,14 +8,22 @@
 #pragma once
 
 #include <glm/vec3.hpp>
-#include <glm/geometric.hpp>
 
 namespace Stellar
 {
-    static glm::dvec3 gravityAcceleration(const glm::dvec3& position, double mu)
+    struct OrbitalState
     {
-        const double r  = glm::length(position);
+        glm::dvec3 position;
+        glm::dvec3 velocity;
+    };
 
-        return -mu * position / (r * r * r);
-    }
+    glm::dvec3 gravityAcceleration(const glm::dvec3& position, double mu);
+
+    OrbitalState stepExplicitEuler(const OrbitalState& current, double mu, double dt);
+
+    OrbitalState stepSemiImplicitEuler(const OrbitalState& current, double mu, double dt);
+
+    OrbitalState stepVelocityVerlet(const OrbitalState& current, double mu, double dt);
+
+    double specificEnergy(const OrbitalState& state, double mu);
 } // Stellar
