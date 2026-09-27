@@ -255,3 +255,22 @@ TEST_CASE("orbit ellipse matrix maps the unit circle onto the orbit")
     REQUIRE(mappedApoapsis.y == Catch::Approx(apoapsis.y));
     REQUIRE(mappedApoapsis.z == Catch::Approx(apoapsis.z));
 }
+
+TEST_CASE("Kepler: one big step equals many small steps (time warp)")
+{
+    const Stellar::OrbitalState start = Stellar::elementsToState({10.0, 0.3, 0.5, 1.0, 2.0, 1.0}, 1000.0);
+    constexpr double dt = 1.0 / 60.0;
+    constexpr int steps = 6000;
+
+    Stellar::OrbitalState small = start;
+    for (int i = 0; i < steps; ++i)
+    {
+        small = Stellar::stepKepler(small, 1000.0, dt);
+    }
+
+    const Stellar::OrbitalState big = Stellar::stepKepler(start, 1000.0, steps * dt);
+
+    REQUIRE(big.position.x == Catch::Approx(small.position.x).margin(1e-9));
+    REQUIRE(big.position.y == Catch::Approx(small.position.y).margin(1e-9));
+    REQUIRE(big.position.z == Catch::Approx(small.position.z).margin(1e-9));
+}

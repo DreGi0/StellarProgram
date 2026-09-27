@@ -123,6 +123,15 @@ constexpr const char* INTEGRATOR_NAMES[] = {
     "Kepler (on rails)",
 };
 
+constexpr double TIME_WARP_LEVELS[] = {
+    1.0, 5.0, 10.0, 50.0, 100.0, 1'000.0, 10'000.0, 100'000.0
+};
+
+constexpr const char* TIME_WARP_NAMES[] = {
+    "x1", "x5", "x10", "x50", "x100", "x1000", "x10000", "x100000",
+};
+
+
 namespace Stellar
 {
     Application::Application() :
@@ -266,7 +275,10 @@ namespace Stellar
         m_cubeMesh.draw();
 
         // MODEL - "Earth's Satellite"
-        const glm::dvec3 orbitPosition = glm::mix(m_previousOrbitPosition, m_orbitState.position, static_cast<double>(alpha));
+        // With time warp each physics step jumps a big arc of the orbit, and blending two points
+        // of an ellipse in a straight line cuts inside it, so interpolation only at x1
+        const double interpolation = timeWarp() > 1.0 ? 1.0 : static_cast<double>(alpha);
+        const glm::dvec3 orbitPosition = glm::mix(m_previousOrbitPosition, m_orbitState.position, interpolation);
         const glm::dvec3 orbiterRelativeToCam = CENTRAL_BODY_POSITION + orbitPosition - m_camera.getPosition();
         const auto orbiterModel = glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam));
 
@@ -308,6 +320,20 @@ namespace Stellar
             resetOrbit();
         }
 
+        // Big steps would wreck the step-by-step integrators; only Kepler is exact for any step
+        const bool onRails = INTEGRATORS[m_integratorIndex] == stepKepler;
+
+        ImGui::BeginDisabled(!onRails);
+        ImGui::Combo("Time warp", &m_timeWarpIndex, TIME_WARP_NAMES, IM_ARRAYSIZE(TIME_WARP_NAMES));
+        ImGui::EndDisabled();
+
+        if (!onRails)
+        {
+            ImGui::TextDisabled("Time warp needs Kepler (on rails)");
+        }
+
+        ImGui::Text("Mission time: %.1f s", m_missionTime);
+
         ImGui::Text("Orbit radius: %.4f", glm::length(m_orbitState.position));
         ImGui::Text("Energy: %.6f", energy);
         ImGui::Text("Energy drift: %.12f", drift);
@@ -330,7 +356,10 @@ namespace Stellar
 
     void Application::update(const double deltaTime)
     {
-        m_orbitState = INTEGRATORS[m_integratorIndex](m_orbitState, ORBIT_MU, deltaTime);
+        const double warpedDt = deltaTime * timeWarp();
+
+        m_orbitState = INTEGRATORS[m_integratorIndex](m_orbitState, ORBIT_MU, warpedDt);
+        m_missionTime += warpedDt;
     }
 
     void Application::resetOrbit()
@@ -338,5 +367,14 @@ namespace Stellar
         m_orbitState = elementsToState(START_ORBIT, ORBIT_MU);
         m_previousOrbitPosition = m_orbitState.position;
         m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
+
+        m_missionTime = 0.0;
+    }
+
+    double Application::timeWarp() const
+    {
+        const bool onRails = INTEGRATORS[m_integratorIndex] == stepKepler;
+
+        return onRails ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
     }
 } // Stellar

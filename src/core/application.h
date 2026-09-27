@@ -43,6 +43,8 @@ namespace Stellar
         double m_initialEnergy = 0.0;
         // 0: Explicit Euler, 1:SemiImplicitEuler 2: Velocity Verlet, 3: Kepler
         int m_integratorIndex = 3;
+        int m_timeWarpIndex = 0;
+        double m_missionTime = 0.0;
 
         bool m_cursorCaptured = true;
         bool m_tabWasPressed = false;
@@ -51,5 +53,6 @@ namespace Stellar
         void render(float alpha);
         void update(double deltaTime);
         void resetOrbit();
+        double timeWarp() const;
     };
 } // Stellar
