@@ -24,7 +24,9 @@ add_library(StellarEngine STATIC
         src/core/application.cpp
         src/core/application.h
         src/ui/debug_overlay.cpp
-        src/ui/debug_overlay.h)
+        src/ui/debug_overlay.h
+        src/physics/orbit.cpp
+        src/physics/orbit.h)
 
 add_executable(StellarProgram src/main.cpp)
 target_link_libraries(StellarProgram PRIVATE StellarEngine)
@@ -65,7 +67,8 @@ target_compile_options(StellarProgram PRIVATE
 find_package(Catch2 3 CONFIG REQUIRED)
 
 add_executable(StellarTests tests/sanity_tests.cpp
-        tests/camera_tests.cpp)
+        tests/camera_tests.cpp
+        tests/orbit_tests.cpp)
 target_link_libraries(StellarTests PRIVATE StellarEngine Catch2::Catch2WithMain)
 
 enable_testing()
