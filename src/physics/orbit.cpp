@@ -24,6 +24,33 @@ namespace
 
         return wrapped < glm::two_pi<double>() ? wrapped : 0.0;
     }
+
+    double trueToMeanAnomaly(const double nu, const double e)
+    {
+        const double E = 2.0 * std::atan2(std::sqrt(1.0 - e) * std::sin(nu / 2.0), std::sqrt(1.0 + e) * std::cos(nu / 2.0));
+
+        return E - e * std::sin(E);
+    }
+
+    double meanToTrueAnomaly(const double M, const double e)
+    {
+        double E = e < 0.8 ? M : glm::pi<double>();
+
+        for (int i = 0; i < 20; ++i)
+        {
+            const double correction = (E - e * std::sin(E) - M) / (1.0 - e * std::cos(E));
+            E -= correction;
+
+            if (std::abs(correction) < 1e-14)
+            {
+                break;
+            }
+        }
+
+        const double nu = 2.0 * std::atan2(std::sqrt(1.0 + e) * std::sin(E / 2.0), std::sqrt(1.0 - e) * std::cos(E / 2.0));
+
+        return nu < 0.0 ? nu + glm::two_pi<double>() : nu;
+    }
 }
 
 namespace Stellar
@@ -140,5 +167,26 @@ namespace Stellar
             .position = glm::dvec3(rotation * glm::dvec4(positionFlat, 0.0)),
             .velocity = glm::dvec3(rotation * glm::dvec4(velocityFlat, 0.0)),
         };
+    }
+
+    OrbitalElements propagateKepler(const OrbitalElements& elements, double mu, double dt)
+    {
+        const double a = elements.semiMajorAxis;
+        const double e = elements.eccentricity;
+
+        const double n = std::sqrt(mu / (a * a * a));
+
+        const double M0 = trueToMeanAnomaly(elements.trueAnomaly, e);
+        const double M = std::fmod(M0 + n * dt, glm::two_pi<double>());
+
+        OrbitalElements next = elements;
+        next.trueAnomaly = meanToTrueAnomaly(M, e);
+
+        return next;
+    }
+
+    OrbitalState stepKepler(const OrbitalState& current, const double mu, const double dt)
+    {
+        return elementsToState(propagateKepler(stateToElements(current, mu), mu, dt), mu);
     }
 } // Stellar
