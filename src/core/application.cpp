@@ -10,11 +10,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
+#include <cmath>
+#include <vector>
 
 #include "application.h"
-
-#include <imgui.h>
-
 #include "core/paths.h"
 
 
@@ -68,6 +68,27 @@ constexpr unsigned int CUBE_INDICES[] = {
     20, 21, 22,   22, 23, 20,   // Bottom
 };
 
+// A circle of radius 1 on the XY plane, drawn as a closed line.
+// orbitEllipseMatrix() stretches, shifts and rotates it into the real orbit every frame.
+Stellar::Mesh makeUnitCircleMesh()
+{
+    constexpr int SEGMENTS = 256;
+
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    for (int i = 0; i < SEGMENTS; ++i)
+    {
+        constexpr float ORBIT_COLOR[] = { 0.35f, 0.65f, 1.0f };
+        const float angle = glm::two_pi<float>() * static_cast<float>(i) / SEGMENTS;
+
+        vertices.insert(vertices.end(), {std::cos(angle), std::sin(angle), 0.0f, ORBIT_COLOR[0], ORBIT_COLOR[1], ORBIT_COLOR[2]});
+        indices.push_back(i);
+    }
+
+    return {vertices.data(), SEGMENTS, indices.data(), indices.size(), GL_LINE_LOOP};
+}
+
 constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
 
@@ -110,6 +131,7 @@ namespace Stellar
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
+    m_orbitMesh(makeUnitCircleMesh()),
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f))
     {
         resetOrbit();
@@ -251,6 +273,18 @@ namespace Stellar
         m_shader.setMat4("uModel", glm::value_ptr(orbiterModel));
         m_cubeMesh.draw();
 
+        // MODEL - Orbit line (ellipses only)
+        const OrbitalElements elements = stateToElements(m_orbitState, ORBIT_MU);
+
+        if (elements.eccentricity < 1.0)
+        {
+            const glm::dmat4 orbitModel = glm::translate(glm::dmat4(1.0), centralRelativeToCam) * orbitEllipseMatrix(elements);
+            const glm::mat4 orbitModelF(orbitModel);
+
+            m_shader.setMat4("uModel", glm::value_ptr(orbitModelF));
+            m_orbitMesh.draw();
+        }
+
         // DEBUG OVERLAY
         const double energy = specificEnergy(m_orbitState, ORBIT_MU);
         const double drift = glm::abs(energy - m_initialEnergy) / glm::abs(m_initialEnergy);
@@ -279,8 +313,6 @@ namespace Stellar
         ImGui::Text("Energy drift: %.12f", drift);
 
         ImGui::Separator();
-
-        const OrbitalElements elements = stateToElements(m_orbitState, ORBIT_MU);
 
         ImGui::Text("Periapsis: %.4f", elements.semiMajorAxis * (1.0 - elements.eccentricity));
         ImGui::Text("Apoapsis:  %.4f", elements.semiMajorAxis * (1.0 + elements.eccentricity));

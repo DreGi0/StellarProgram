@@ -29,6 +29,7 @@ namespace Stellar
         DebugOverlay m_debugOverlay;
         Shader m_shader;
         Mesh m_cubeMesh;
+        Mesh m_orbitMesh;
         Camera m_camera;
 
         double  m_lastFrameTime = 0.0;
