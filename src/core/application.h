@@ -40,8 +40,8 @@ namespace Stellar
         OrbitalState m_orbitState{};
         glm::dvec3 m_previousOrbitPosition = glm::dvec3(0.0);
         double m_initialEnergy = 0.0;
-        // 0: Explicit Euler, 1:SemiImplicitEuler 2: Velocity Verlet
-        int m_integratorIndex = 2;
+        // 0: Explicit Euler, 1:SemiImplicitEuler 2: Velocity Verlet, 3: Kepler
+        int m_integratorIndex = 3;
 
         bool m_cursorCaptured = true;
         bool m_tabWasPressed = false;
