@@ -20,7 +20,9 @@ namespace
     {
         const double angle = std::atan2(glm::dot(glm::cross(from, to), axis), glm::dot(from, to));
 
-        return angle < 0.0 ? angle + glm::two_pi<double>() : angle;
+        const double wrapped = angle < 0.0 ? angle + glm::two_pi<double>() : angle;
+
+        return wrapped < glm::two_pi<double>() ? wrapped : 0.0;
     }
 }
 

@@ -77,6 +77,16 @@ constexpr double FIXED_DT = 1.0 / 60.0;
 constexpr double ORBIT_MU = 1000.0;
 constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
 
+// Starting orbit, described with elements instead of position + velocity
+constexpr Stellar::OrbitalElements START_ORBIT {
+    .semiMajorAxis = 10.0,
+    .eccentricity = 0.3,
+    .inclination = glm::radians(20.0),
+    .longitudeOfAscendingNode = 0.0,
+    .argumentOfPeriapsis = 0.0,
+    .trueAnomaly = 0.0,
+};
+
 // note: it only needs one (Velocity Verlet), but since I'm trying to see what happens on each
 constexpr Stellar::StepFunction INTEGRATORS[] = {
     Stellar::stepExplicitEuler,
@@ -266,6 +276,19 @@ namespace Stellar
         ImGui::Text("Energy: %.6f", energy);
         ImGui::Text("Energy drift: %.12f", drift);
 
+        ImGui::Separator();
+
+        const OrbitalElements elements = stateToElements(m_orbitState, ORBIT_MU);
+
+        ImGui::Text("Periapsis: %.4f", elements.semiMajorAxis * (1.0 - elements.eccentricity));
+        ImGui::Text("Apoapsis:  %.4f", elements.semiMajorAxis * (1.0 + elements.eccentricity));
+        ImGui::Text("a (semi-major axis): %.6f", elements.semiMajorAxis);
+        ImGui::Text("e (eccentricity): %.6f", elements.eccentricity);
+        ImGui::Text("i (inclination): %.3f deg", glm::degrees(elements.inclination));
+        ImGui::Text("LAN (Omega): %.3f deg", glm::degrees(elements.longitudeOfAscendingNode));
+        ImGui::Text("Arg. periapsis (w): %.3f deg", glm::degrees(elements.argumentOfPeriapsis));
+        ImGui::Text("True anomaly (nu): %.3f deg", glm::degrees(elements.trueAnomaly));
+
         ImGui::End();
 
         m_debugOverlay.endFrame();
@@ -278,7 +301,7 @@ namespace Stellar
 
     void Application::resetOrbit()
     {
-        m_orbitState = {glm::dvec3(10.0, 0.0, 0.0), glm::dvec3(0.0, 10.0, 0.0)};
+        m_orbitState = elementsToState(START_ORBIT, ORBIT_MU);
         m_previousOrbitPosition = m_orbitState.position;
         m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
     }
