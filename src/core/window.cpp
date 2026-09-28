@@ -10,7 +10,7 @@
 
 namespace Stellar {
 
-    // CONTRUCTORS & METHODS
+    // CONSTRUCTORS & METHODS
     Window::Window(const int width, const int height, const char *title) {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW3");
