@@ -10,7 +10,7 @@
 
 namespace Stellar {
 
-    // ----- CONTRUCTORS & METHODS ----------
+    // CONTRUCTORS & METHODS
     Window::Window(const int width, const int height, const char *title) {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW3");
@@ -58,19 +58,19 @@ namespace Stellar {
         glfwGetFramebufferSize(m_handle.get(), &width, &height);
     }
 
-    // ----- CALLBACKS ----------
+    // CALLBACKS
     void Window::errorCallback(int /*error*/, const char *description) {
         fprintf(stderr, "Error: %s\n", description);
     }
 
-    void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    void Window::keyCallback(GLFWwindow *window, const int key, int /*scancode*/, const int action, int /*mods*/) {
         // Close window on ESC key pressed
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
     }
 
-    void Window::framebufferSizeCallback(GLFWwindow *window, const int width, const int height) {
+    void Window::framebufferSizeCallback(GLFWwindow */*window*/, const int width, const int height) {
         glViewport(0, 0, width, height);
     }
 } // Stellar
