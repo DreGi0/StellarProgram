@@ -29,6 +29,8 @@ add_library(StellarEngine STATIC
         src/core/paths.h
         src/core/application.cpp
         src/core/application.h
+        src/core/input.cpp
+        src/core/input.h
         src/graphics/shader.cpp
         src/graphics/shader.h
         src/graphics/mesh.cpp
