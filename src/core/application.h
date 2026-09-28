@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <glm/vec2.hpp>
+
 #include "core/window.h"
 #include "graphics/graphics_context.h"
 #include "graphics/shader.h"
@@ -45,6 +47,7 @@ namespace Stellar
         int m_integratorIndex = 3;
         int m_timeWarpIndex = 0;
         double m_missionTime = 0.0;
+        glm::dvec2 m_burnInput = glm::dvec2(0.0);
 
         bool m_cursorCaptured = true;
         bool m_tabWasPressed = false;
@@ -54,5 +57,6 @@ namespace Stellar
         void update(double deltaTime);
         void resetOrbit();
         double timeWarp() const;
+        bool isBurning() const;
     };
 } // Stellar
