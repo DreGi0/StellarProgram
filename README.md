@@ -24,8 +24,7 @@ Early development. Core windowing and OpenGL up (GLFW + GLAD). Not playable yet,
 [`OpenGL 4.6 core`](https://www.opengl.org/) | 
 [`GLFW`](https://www.glfw.org/) | 
 [`GLAD`](https://glad.dav1d.de/) | 
-[`CMake`](https://cmake.org/) | 
-[`Docker`](https://www.docker.com/)
+[`CMake`](https://cmake.org/)
 
 ## Installation
 Requirements:
