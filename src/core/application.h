@@ -58,5 +58,6 @@ namespace Stellar
         void resetOrbit();
         double timeWarp() const;
         bool isBurning() const;
+        double physicsWarp() const;
     };
 } // Stellar

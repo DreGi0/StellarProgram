@@ -95,6 +95,7 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 constexpr double FIXED_DT = 1.0 / 60.0;
 
 constexpr double THRUST_ACCELERATION = 1.0;
+constexpr double MAX_PHYSICS_WARP = 4.0;
 
 // Orbit (toy units: r = 10, v = 10 -> which is one lap every 2*pi seconds)
 constexpr double ORBIT_MU = 1000.0;
@@ -172,7 +173,7 @@ namespace Stellar
             processInput(static_cast<float>(frameTime));
 
             frameTime = glm::min(frameTime, 0.25);
-            m_accumulatedTime += frameTime;
+            m_accumulatedTime += frameTime * physicsWarp();
 
             while (m_accumulatedTime >= FIXED_DT)
             {
@@ -345,8 +346,7 @@ namespace Stellar
 
         if (isBurning())
         {
-            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails");
-        }
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails (physics warp x%.0f)", physicsWarp());        }
         else
         {
             ImGui::Text("Engine off - %s", onRails ? "on rails" : "step by step");
@@ -414,5 +414,10 @@ namespace Stellar
     bool Application::isBurning() const
     {
         return m_burnInput != glm::dvec2(0.0);
+    }
+
+    double Application::physicsWarp() const
+    {
+        return isBurning() ? glm::min(TIME_WARP_LEVELS[m_timeWarpIndex], MAX_PHYSICS_WARP) : 1.0;
     }
 } // Stellar
