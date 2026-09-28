@@ -94,6 +94,8 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
 
+constexpr double THRUST_ACCELERATION = 1.0;
+
 // Orbit (toy units: r = 10, v = 10 -> which is one lap every 2*pi seconds)
 constexpr double ORBIT_MU = 1000.0;
 constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
@@ -201,6 +203,13 @@ namespace Stellar
         }
 
         m_tabWasPressed = tabIsPressed;
+
+        const auto held = [this](const int key)
+        {
+            return glfwGetKey(m_window.getHandle(), key) == GLFW_PRESS ? 1.0 : 0.0;
+        };
+
+        m_burnInput = glm::dvec2(held(GLFW_KEY_UP) - held(GLFW_KEY_DOWN), held(GLFW_KEY_RIGHT) - held(GLFW_KEY_LEFT));
 
         if (!m_cursorCaptured)
         {
@@ -334,6 +343,17 @@ namespace Stellar
 
         ImGui::Text("Mission time: %.1f s", m_missionTime);
 
+        if (isBurning())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails");
+        }
+        else
+        {
+            ImGui::Text("Engine off - %s", onRails ? "on rails" : "step by step");
+        }
+
+        ImGui::TextDisabled("Burn: Up/Down prograde/retrograde, Right/Left normal/antinormal");
+
         ImGui::Text("Orbit radius: %.4f", glm::length(m_orbitState.position));
         ImGui::Text("Energy: %.6f", energy);
         ImGui::Text("Energy drift: %.12f", drift);
@@ -356,6 +376,19 @@ namespace Stellar
 
     void Application::update(const double deltaTime)
     {
+        if (isBurning())
+        {
+            // Engine on: the orbit is changing, so leave the rails and step the physics with Verlet
+            const glm::dvec3 thrust = THRUST_ACCELERATION * burnDirection(m_orbitState, m_burnInput.x, m_burnInput.y);
+
+            m_orbitState = stepVelocityVerletWithThrust(m_orbitState, ORBIT_MU, deltaTime, thrust);
+            m_missionTime += deltaTime;
+
+            // The burn changes the energy on purpose; measure drift from the new orbit instead
+            m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
+            return;
+        }
+
         const double warpedDt = deltaTime * timeWarp();
 
         m_orbitState = INTEGRATORS[m_integratorIndex](m_orbitState, ORBIT_MU, warpedDt);
@@ -375,6 +408,11 @@ namespace Stellar
     {
         const bool onRails = INTEGRATORS[m_integratorIndex] == stepKepler;
 
-        return onRails ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
+        return onRails && !isBurning() ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
+    }
+
+    bool Application::isBurning() const
+    {
+        return m_burnInput != glm::dvec2(0.0);
     }
 } // Stellar
