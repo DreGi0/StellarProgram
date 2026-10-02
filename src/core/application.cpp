@@ -139,6 +139,7 @@ namespace Stellar
 {
     Application::Application() :
     m_window(800, 600, "Stellar Program"),
+    m_input(m_window.getHandle()),
     m_graphicsContext(),
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
@@ -156,9 +157,6 @@ namespace Stellar
 
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
-
-        glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
-        glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         m_lastFrameTime = glfwGetTime();
     }
@@ -194,63 +192,29 @@ namespace Stellar
 
     void Application::processInput(const float deltaTime)
     {
-        const bool tabIsPressed = glfwGetKey(m_window.getHandle(), GLFW_KEY_TAB) == GLFW_PRESS;
-
-        if (tabIsPressed && !m_tabWasPressed)
+        if (m_input.wasPressed(GLFW_KEY_TAB))
         {
-            m_cursorCaptured = !m_cursorCaptured;
-            glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            glfwGetCursorPos(m_window.getHandle(), &m_lastMouseX, &m_lastMouseY);
+            m_input.setCursorCaptured(!m_input.isCursorCaptured());
         }
 
-        m_tabWasPressed = tabIsPressed;
+        m_burnInput = glm::dvec2(
+            m_input.axis(GLFW_KEY_UP, GLFW_KEY_DOWN),
+            m_input.axis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT));
 
-        const auto held = [this](const int key)
+        if (!m_input.isCursorCaptured())
         {
-            return glfwGetKey(m_window.getHandle(), key) == GLFW_PRESS ? 1.0 : 0.0;
-        };
-
-        m_burnInput = glm::dvec2(held(GLFW_KEY_UP) - held(GLFW_KEY_DOWN), held(GLFW_KEY_RIGHT) - held(GLFW_KEY_LEFT));
-
-        if (!m_cursorCaptured)
-        {
-            glfwSetInputMode(m_window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             return;
         }
 
-        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_W) == GLFW_PRESS)
-        {
-            m_camera.moveForward(MOVE_SPEED * deltaTime);
-        }
+        // CAMERA
+        const float step = MOVE_SPEED * deltaTime;
 
-        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_D) == GLFW_PRESS)
-        {
-            m_camera.moveRight(MOVE_SPEED * deltaTime);
-        }
+        m_camera.moveForward(step * static_cast<float>(m_input.axis(GLFW_KEY_W, GLFW_KEY_S)));
+        m_camera.moveRight(step * static_cast<float>(m_input.axis(GLFW_KEY_D, GLFW_KEY_A)));
 
-        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_S) == GLFW_PRESS)
-        {
-            m_camera.moveForward(-MOVE_SPEED * deltaTime);
-        }
+        const glm::dvec2 mouse = m_input.mouseDelta() * static_cast<double>(MOUSE_SENSITIVITY);
 
-        if (glfwGetKey(m_window.getHandle(), GLFW_KEY_A) == GLFW_PRESS)
-        {
-            m_camera.moveRight(-MOVE_SPEED * deltaTime);
-        }
-
-        double mouseX = 0, mouseY = 0;
-        glfwGetCursorPos(m_window.getHandle(), &mouseX, &mouseY);
-
-        double offsetX = mouseX - m_lastMouseX;
-        double offsetY = m_lastMouseY - mouseY;
-
-        m_lastMouseX = mouseX;
-        m_lastMouseY = mouseY;
-
-        offsetX = offsetX * MOUSE_SENSITIVITY;
-        offsetY = offsetY * MOUSE_SENSITIVITY;
-
-        m_camera.rotate(static_cast<float>(offsetX), static_cast<float>(offsetY));
+        m_camera.rotate(static_cast<float>(mouse.x), static_cast<float>(mouse.y));
     }
 
     void Application::render(const float alpha)

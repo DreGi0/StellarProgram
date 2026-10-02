@@ -10,6 +10,7 @@
 #include <glm/vec2.hpp>
 
 #include "core/window.h"
+#include "core/input.h"
 #include "graphics/graphics_context.h"
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
@@ -27,6 +28,7 @@ namespace Stellar
     private:
         // ORDER MATTERS: constructed top to bottom and destroyed bottom to top
         Window m_window;
+        Input m_input;
         GraphicsContext m_graphicsContext;
         DebugOverlay m_debugOverlay;
         Shader m_shader;
@@ -35,8 +37,6 @@ namespace Stellar
         Camera m_camera;
 
         double  m_lastFrameTime = 0.0;
-        double m_lastMouseX = 0.0;
-        double m_lastMouseY = 0.0;
 
         double m_accumulatedTime = 0.0;
 
@@ -48,9 +48,6 @@ namespace Stellar
         int m_timeWarpIndex = 0;
         double m_missionTime = 0.0;
         glm::dvec2 m_burnInput = glm::dvec2(0.0);
-
-        bool m_cursorCaptured = true;
-        bool m_tabWasPressed = false;
 
         void processInput(float deltaTime);
         void render(float alpha);
