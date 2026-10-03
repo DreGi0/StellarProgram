@@ -135,6 +135,8 @@ namespace Stellar
         const glm::dvec3 orbitPosition = glm::mix(vessel.previousPosition, vessel.state.position, interpolation);
         const glm::dvec3 vesselPosition = CENTRAL_BODY_POSITION + orbitPosition;
 
+        m_orbitCamera.setFrame(orbitPosition, vessel.state.velocity);
+
         // CAMERA
         const glm::dvec3 cameraPosition = m_useOrbitCamera
             ? vesselPosition + m_orbitCamera.offset()

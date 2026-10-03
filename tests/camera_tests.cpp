@@ -84,3 +84,13 @@ TEST_CASE("orbit camera pitch is limited") {
 
     REQUIRE(camera.offset().z / 10.0 == Catch::Approx(glm::sin(glm::radians(89.0))));
 }
+
+TEST_CASE("orbit camera 'up' points away from the planet") {
+    Stellar::OrbitCamera camera(10.0);
+
+    camera.setFrame(glm::dvec3(0.0, 10.0, 0.0), glm::dvec3(-1.0, 0.0, 0.0));
+    camera.rotate(0.0f, 1000.0f); // Pitch clamped at 89: almost straight above the vessel
+
+    const glm::dvec3 direction = glm::normalize(camera.offset());
+    REQUIRE(direction.y == Catch::Approx(glm::sin(glm::radians(89.0))));
+}

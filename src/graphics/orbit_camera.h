@@ -27,6 +27,14 @@ namespace Stellar
         explicit OrbitCamera(double distance);
 
         /**
+         * @brief Aligns the camera with the vessel's orbit: "up" points away from the planet and
+         * yaw 0 looks along the direction of travel. Call it every frame before offset() / getViewMatrix().
+         * @param position Vessel position relative to the planet.
+         * @param velocity Vessel velocity.
+         */
+        void setFrame(const glm::dvec3& position, const glm::dvec3& velocity);
+
+        /**
          * @brief Turns around the target. Pitch is clamped to +/-89 degrees so it never flips over the top.
          * @param yawOffset Degrees around the Z axis.
          * @param pitchOffset Degrees up/down.
@@ -53,7 +61,10 @@ namespace Stellar
 
         private:
         double m_distance;
-        float m_yaw = -90.0f;  ///< Degrees around Z, measured from +X
-        float m_pitch = 20.0f; ///< Degrees above the XY plane, clamped to [-89, 89]
+        float m_yaw = 180.0f;  ///< Degrees around "up", measured from "forward" (180 = behind the vessel)
+        float m_pitch = 20.0f; ///< Degrees above the horizontal, clamped to [-89, 89]
+
+        glm::dvec3 m_up = glm::dvec3(0.0, 0.0, 1.0);      ///< Away from the planet
+        glm::dvec3 m_forward = glm::dvec3(1.0, 0.0, 0.0); ///< Direction of travel, flattened to the horizontal
     };
 } // Stellar
