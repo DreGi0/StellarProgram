@@ -10,6 +10,8 @@
 #include <cstddef>
 #include <glad/glad.h>
 
+#include "primitives.h"
+
 namespace Stellar {
     /**
      * @class Mesh
@@ -26,6 +28,13 @@ namespace Stellar {
          * @param primitive How the indices are connected: GL_TRIANGLES (default), GL_LINE_LOOP, ...
          */
         Mesh(const float* vertices, size_t vertexCount, const unsigned int* indices, size_t indexCount, GLenum primitive = GL_TRIANGLES);
+
+        /**
+         * @brief Constructs a Mesh from generated data (see primitives.h).
+         * @param data Vertices and indices to upload.
+         * @param primitive How the indices are connected: GL_TRIANGLES (default), GL_LINE_LOOP, ...
+         */
+        explicit Mesh(const MeshData& data, GLenum primitive = GL_TRIANGLES);
 
         // Disable copy to avoid duplicity of OpenGL handles
         Mesh(const Mesh&) = delete;

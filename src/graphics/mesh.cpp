@@ -46,6 +46,11 @@ namespace Stellar {
         glBindVertexArray(0);
     }
 
+    Mesh::Mesh(const MeshData& data, const GLenum primitive) :
+    Mesh(data.vertices.data(), data.vertices.size() / 6, data.indices.data(), data.indices.size(), primitive)
+    {
+    }
+
     Mesh::Mesh(Mesh &&other) noexcept :
     m_indexCount(other.m_indexCount),
     m_primitive(other.m_primitive),

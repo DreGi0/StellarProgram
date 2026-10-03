@@ -10,82 +10,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <cmath>
-#include <vector>
 
 #include "application.h"
 #include "core/paths.h"
-
-// Model geometry
-constexpr float CUBE_VERTICES[] = {
-     // Position (x, y, z)     |  Color (r, g, b)
-     // Front (+Z) - red
-     -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // A
-      0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // B
-      0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // C
-     -0.5f,  0.5f,  0.5f,       1.0f, 0.0f, 0.0f,   // D
-
-     // Back (-Z) - green
-      0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // F
-     -0.5f, -0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // E
-     -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // H
-      0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 0.0f,   // G
-
-     // Right (+X) - blue
-      0.5f, -0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // B
-      0.5f, -0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // F
-      0.5f,  0.5f, -0.5f,       0.0f, 0.0f, 1.0f,   // G
-      0.5f,  0.5f,  0.5f,       0.0f, 0.0f, 1.0f,   // C
-
-     // Left (-X) - yellow
-     -0.5f, -0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // E
-     -0.5f, -0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // A
-     -0.5f,  0.5f,  0.5f,       1.0f, 1.0f, 0.0f,   // D
-     -0.5f,  0.5f, -0.5f,       1.0f, 1.0f, 0.0f,   // H
-
-     // Top (+Y) - cyan
-     -0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // D
-      0.5f,  0.5f,  0.5f,       0.0f, 1.0f, 1.0f,   // C
-      0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // G
-     -0.5f,  0.5f, -0.5f,       0.0f, 1.0f, 1.0f,   // H
-
-     // Bottom (-Y) - magenta
-     -0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // E
-      0.5f, -0.5f, -0.5f,       1.0f, 0.0f, 1.0f,   // F
-      0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // B
-     -0.5f, -0.5f,  0.5f,       1.0f, 0.0f, 1.0f,   // A
-};
-
-// Index data: 2 triangles per face, 4 vertices per face
-constexpr unsigned int CUBE_INDICES[] = {
-     0,  1,  2,    2,  3,  0,   // Front
-     4,  5,  6,    6,  7,  4,   // Back
-     8,  9, 10,   10, 11,  8,   // Right
-    12, 13, 14,   14, 15, 12,   // Left
-    16, 17, 18,   18, 19, 16,   // Top
-    20, 21, 22,   22, 23, 20,   // Bottom
-};
-
-// A circle of radius 1 on the XY plane, drawn as a closed line.
-// orbitEllipseMatrix() stretches, shifts and rotates it into the real orbit every frame.
-Stellar::Mesh makeUnitCircleMesh()
-{
-    constexpr int SEGMENTS = 256;
-
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
-
-    for (int i = 0; i < SEGMENTS; ++i)
-    {
-        constexpr float ORBIT_COLOR[] = { 0.35f, 0.65f, 1.0f };
-        const float angle = glm::two_pi<float>() * static_cast<float>(i) / SEGMENTS;
-
-        vertices.insert(vertices.end(), {std::cos(angle), std::sin(angle), 0.0f, ORBIT_COLOR[0], ORBIT_COLOR[1], ORBIT_COLOR[2]});
-        indices.push_back(i);
-    }
-
-    return {vertices.data(), SEGMENTS, indices.data(), indices.size(), GL_LINE_LOOP};
-}
 
 constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
@@ -100,8 +27,9 @@ namespace Stellar
     m_graphicsContext(),
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
-    m_cubeMesh(CUBE_VERTICES, 24, CUBE_INDICES, 36),
-    m_orbitMesh(makeUnitCircleMesh()),
+    m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
+    m_sphereMesh(unitSphere(32, 64)),
+    m_orbitMesh(unitCircle(256), GL_LINE_LOOP),
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f))
     {
         // Viewport adjustment
@@ -176,14 +104,8 @@ namespace Stellar
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_shader.use();
-
-        // COLOR
-        m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
-
         // VIEW
         const auto viewMatrix = m_camera.getViewMatrix();
-        m_shader.setMat4("uView", glm::value_ptr(viewMatrix));
 
         // PROJECTION
         int fbWidth = 0, fbHeight = 0;
@@ -194,14 +116,20 @@ namespace Stellar
             : 1.0f;
 
         const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-        m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+
+        // LIT OBJECTS (spheres)
+        m_litShader.use();
+        m_litShader.setMat4("uView", glm::value_ptr(viewMatrix));
+        m_litShader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+        m_litShader.setVec3("uLightDir", 1.0f, 0.5f, 0.3f); // Toward the "Sun", fixed for now
 
         // MODEL - "Earth"
         const glm::dvec3 centralRelativeToCam = CENTRAL_BODY_POSITION - m_camera.getPosition();
-        const auto centralModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam)), glm::vec3(2.0f));
+        const auto centralModel = glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam));
 
-        m_shader.setMat4("uModel", glm::value_ptr(centralModel));
-        m_cubeMesh.draw();
+        m_litShader.setVec3("uColor", 0.25f, 0.45f, 0.9f);
+        m_litShader.setMat4("uModel", glm::value_ptr(centralModel));
+        m_sphereMesh.draw();
 
         // MODEL - "Earth's Satellite"
         // With time warp each physics step jumps a big arc of the orbit, and blending two points
@@ -211,10 +139,17 @@ namespace Stellar
         const double interpolation = m_world.timeWarp() > 1.0 ? 1.0 : static_cast<double>(alpha);
         const glm::dvec3 orbitPosition = glm::mix(vessel.previousPosition, vessel.state.position, interpolation);
         const glm::dvec3 orbiterRelativeToCam = CENTRAL_BODY_POSITION + orbitPosition - m_camera.getPosition();
-        const auto orbiterModel = glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam));
+        const auto orbiterModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam)), glm::vec3(0.5f));
 
-        m_shader.setMat4("uModel", glm::value_ptr(orbiterModel));
-        m_cubeMesh.draw();
+        m_litShader.setVec3("uColor", 0.9f, 0.9f, 0.9f);
+        m_litShader.setMat4("uModel", glm::value_ptr(orbiterModel));
+        m_sphereMesh.draw();
+
+        // UNLIT OBJECTS (orbit line)
+        m_shader.use();
+        m_shader.setMat4("uView", glm::value_ptr(viewMatrix));
+        m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+        m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL - Orbit line (ellipses only)
         const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);
