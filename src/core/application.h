@@ -16,6 +16,7 @@
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
 #include "graphics/camera.h"
+#include "graphics/orbit_camera.h"
 #include "ui/debug_overlay.h"
 
 namespace Stellar
@@ -52,14 +53,16 @@ namespace Stellar
         Mesh m_sphereMesh;
         Mesh m_orbitMesh;
         Camera m_camera;
+        OrbitCamera m_orbitCamera;
 
         double m_lastFrameTime = 0.0;   ///< glfwGetTime() at the start of the previous frame
         double m_accumulatedTime = 0.0; ///< Real time not yet consumed by fixed steps
+        bool m_useOrbitCamera = true; ///< true = orbit camera around the vessel, false = free-look debug camera
 
         World m_world;
 
         /**
-         * @brief Reads the input once per frame: cursor toggle, burn command and camera movement.
+         * @brief Reads the input once per frame: cursor toggle, camera switch, burn command and the active camera.
          * @param deltaTime Seconds since the last frame (for camera movement).
          */
         void processInput(float deltaTime);

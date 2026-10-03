@@ -8,7 +8,6 @@
 #include "debug_overlay.h"
 #include "core/window.h"
 #include "game/world.h"
-#include "graphics/camera.h"
 
 #include <glm/glm.hpp>
 #include <imgui.h>
@@ -62,8 +61,9 @@ namespace Stellar
         ImGui::DestroyContext();
     }
 
-    void DebugOverlay::draw(World& world, const Camera& camera) const
+    void DebugOverlay::draw(World& world, const glm::dvec3& cameraPosition) const
     {
+
         const Vessel& vessel = world.vessel();
         const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);
 
@@ -75,7 +75,7 @@ namespace Stellar
         ImGui::Begin("Debug");
         ImGui::Text("Stellar Program");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-        ImGui::Text("Camera Position:\nX %.3f, Y %.3f, Z %.3f", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+        ImGui::Text("Camera Position:\nX %.3f, Y %.3f, Z %.3f", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         ImGui::Separator();
 
