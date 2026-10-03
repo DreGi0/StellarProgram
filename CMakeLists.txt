@@ -45,6 +45,8 @@ add_library(StellarEngine STATIC
         src/ui/debug_overlay.h
         src/physics/orbit.cpp
         src/physics/orbit.h
+        src/game/world.cpp
+        src/game/world.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)
@@ -81,6 +83,7 @@ add_executable(StellarTests
         tests/sanity_tests.cpp
         tests/camera_tests.cpp
         tests/orbit_tests.cpp
+        tests/world_tests.cpp
 )
 target_link_libraries(StellarTests PRIVATE StellarEngine Catch2::Catch2WithMain stellar_warnings)
 

@@ -94,40 +94,11 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
 
-constexpr double THRUST_ACCELERATION = 1.0;
-constexpr double MAX_PHYSICS_WARP = 4.0;
-
-// Orbit (toy units: r = 10, v = 10 -> which is one lap every 2*pi seconds)
-constexpr double ORBIT_MU = 1000.0;
-constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
-
-// Starting orbit, described with elements instead of position + velocity
-constexpr Stellar::OrbitalElements START_ORBIT {
-    .semiMajorAxis = 10.0,
-    .eccentricity = 0.3,
-    .inclination = glm::radians(20.0),
-    .longitudeOfAscendingNode = 0.0,
-    .argumentOfPeriapsis = 0.0,
-    .trueAnomaly = 0.0,
-};
-
-// note: it only needs one (Velocity Verlet), but since I'm trying to see what happens on each
-constexpr Stellar::StepFunction INTEGRATORS[] = {
-    Stellar::stepExplicitEuler,
-    Stellar::stepSemiImplicitEuler,
-    Stellar::stepVelocityVerlet,
-    Stellar::stepKepler,
-};
-
 constexpr const char* INTEGRATOR_NAMES[] = {
     "Explicit Euler",
     "Semi-implicit Euler",
     "Velocity Verlet",
     "Kepler (on rails)",
-};
-
-constexpr double TIME_WARP_LEVELS[] = {
-    1.0, 5.0, 10.0, 50.0, 100.0, 1'000.0, 10'000.0, 100'000.0
 };
 
 constexpr const char* TIME_WARP_NAMES[] = {
@@ -147,8 +118,6 @@ namespace Stellar
     m_orbitMesh(makeUnitCircleMesh()),
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f))
     {
-        resetOrbit();
-
         // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
@@ -171,13 +140,11 @@ namespace Stellar
             processInput(static_cast<float>(frameTime));
 
             frameTime = glm::min(frameTime, 0.25);
-            m_accumulatedTime += frameTime * physicsWarp();
+            m_accumulatedTime += frameTime * m_world.physicsWarp();
 
             while (m_accumulatedTime >= FIXED_DT)
             {
-                m_previousOrbitPosition = m_orbitState.position;
-
-                update(FIXED_DT);
+                m_world.update(FIXED_DT);
                 m_accumulatedTime -= FIXED_DT;
             }
 
@@ -197,7 +164,7 @@ namespace Stellar
             m_input.setCursorCaptured(!m_input.isCursorCaptured());
         }
 
-        m_burnInput = glm::dvec2(
+        m_world.vessel().burn = glm::dvec2(
             m_input.axis(GLFW_KEY_UP, GLFW_KEY_DOWN),
             m_input.axis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT));
 
@@ -251,8 +218,10 @@ namespace Stellar
         // MODEL - "Earth's Satellite"
         // With time warp each physics step jumps a big arc of the orbit, and blending two points
         // of an ellipse in a straight line cuts inside it, so interpolation only at x1
-        const double interpolation = timeWarp() > 1.0 ? 1.0 : static_cast<double>(alpha);
-        const glm::dvec3 orbitPosition = glm::mix(m_previousOrbitPosition, m_orbitState.position, interpolation);
+        const Vessel& vessel = m_world.vessel();
+
+        const double interpolation = m_world.timeWarp() > 1.0 ? 1.0 : static_cast<double>(alpha);
+        const glm::dvec3 orbitPosition = glm::mix(vessel.previousPosition, vessel.state.position, interpolation);
         const glm::dvec3 orbiterRelativeToCam = CENTRAL_BODY_POSITION + orbitPosition - m_camera.getPosition();
         const auto orbiterModel = glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam));
 
@@ -260,7 +229,7 @@ namespace Stellar
         m_cubeMesh.draw();
 
         // MODEL - Orbit line (ellipses only)
-        const OrbitalElements elements = stateToElements(m_orbitState, ORBIT_MU);
+        const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);
 
         if (elements.eccentricity < 1.0)
         {
@@ -272,8 +241,8 @@ namespace Stellar
         }
 
         // DEBUG OVERLAY
-        const double energy = specificEnergy(m_orbitState, ORBIT_MU);
-        const double drift = glm::abs(energy - m_initialEnergy) / glm::abs(m_initialEnergy);
+        const double energy = specificEnergy(vessel.state, ORBIT_MU);
+        const double drift = glm::abs(energy - m_world.initialEnergy()) / glm::abs(m_world.initialEnergy());
 
         m_debugOverlay.beginFrame();
 
@@ -284,21 +253,27 @@ namespace Stellar
 
         ImGui::Separator();
 
-        if (ImGui::Combo("Integrator", &m_integratorIndex, INTEGRATOR_NAMES, IM_ARRAYSIZE(INTEGRATOR_NAMES)))
+        int integrator = m_world.integratorIndex();
+
+        if (ImGui::Combo("Integrator", &integrator, INTEGRATOR_NAMES, IM_ARRAYSIZE(INTEGRATOR_NAMES)))
         {
-            resetOrbit();
+            m_world.setIntegrator(integrator);   // resets the orbit inside World
         }
 
         if (ImGui::Button("Reset orbit"))
         {
-            resetOrbit();
+            m_world.reset();
         }
 
-        // Big steps would wreck the step-by-step integrators; only Kepler is exact for any step
-        const bool onRails = INTEGRATORS[m_integratorIndex] == stepKepler;
+        const bool onRails = m_world.isOnRails();
+
+        int timeWarp = m_world.timeWarpIndex();
 
         ImGui::BeginDisabled(!onRails);
-        ImGui::Combo("Time warp", &m_timeWarpIndex, TIME_WARP_NAMES, IM_ARRAYSIZE(TIME_WARP_NAMES));
+        if (ImGui::Combo("Time warp", &timeWarp, TIME_WARP_NAMES, IM_ARRAYSIZE(TIME_WARP_NAMES)))
+        {
+            m_world.setTimeWarp(timeWarp);
+        }
         ImGui::EndDisabled();
 
         if (!onRails)
@@ -306,11 +281,12 @@ namespace Stellar
             ImGui::TextDisabled("Time warp needs Kepler (on rails)");
         }
 
-        ImGui::Text("Mission time: %.1f s", m_missionTime);
+        ImGui::Text("Mission time: %.1f s", m_world.missionTime());
 
-        if (isBurning())
+        if (m_world.isBurning())
         {
-            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails (physics warp x%.0f)", physicsWarp());        }
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails (physics warp x%.0f)", m_world.physicsWarp());
+        }
         else
         {
             ImGui::Text("Engine off - %s", onRails ? "on rails" : "step by step");
@@ -318,7 +294,7 @@ namespace Stellar
 
         ImGui::TextDisabled("Burn: Up/Down prograde/retrograde, Right/Left normal/antinormal");
 
-        ImGui::Text("Orbit radius: %.4f", glm::length(m_orbitState.position));
+        ImGui::Text("Orbit radius: %.4f", glm::length(vessel.state.position));
         ImGui::Text("Energy: %.6f", energy);
         ImGui::Text("Energy drift: %.12f", drift);
 
@@ -336,52 +312,5 @@ namespace Stellar
         ImGui::End();
 
         m_debugOverlay.endFrame();
-    }
-
-    void Application::update(const double deltaTime)
-    {
-        if (isBurning())
-        {
-            // Engine on: the orbit is changing, so leave the rails and step the physics with Verlet
-            const glm::dvec3 thrust = THRUST_ACCELERATION * burnDirection(m_orbitState, m_burnInput.x, m_burnInput.y);
-
-            m_orbitState = stepVelocityVerletWithThrust(m_orbitState, ORBIT_MU, deltaTime, thrust);
-            m_missionTime += deltaTime;
-
-            // The burn changes the energy on purpose; measure drift from the new orbit instead
-            m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
-            return;
-        }
-
-        const double warpedDt = deltaTime * timeWarp();
-
-        m_orbitState = INTEGRATORS[m_integratorIndex](m_orbitState, ORBIT_MU, warpedDt);
-        m_missionTime += warpedDt;
-    }
-
-    void Application::resetOrbit()
-    {
-        m_orbitState = elementsToState(START_ORBIT, ORBIT_MU);
-        m_previousOrbitPosition = m_orbitState.position;
-        m_initialEnergy = specificEnergy(m_orbitState, ORBIT_MU);
-
-        m_missionTime = 0.0;
-    }
-
-    double Application::timeWarp() const
-    {
-        const bool onRails = INTEGRATORS[m_integratorIndex] == stepKepler;
-
-        return onRails && !isBurning() ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
-    }
-
-    bool Application::isBurning() const
-    {
-        return m_burnInput != glm::dvec2(0.0);
-    }
-
-    double Application::physicsWarp() const
-    {
-        return isBurning() ? glm::min(TIME_WARP_LEVELS[m_timeWarpIndex], MAX_PHYSICS_WARP) : 1.0;
     }
 } // Stellar
