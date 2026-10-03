@@ -45,6 +45,8 @@ add_library(StellarEngine STATIC
         src/ui/debug_overlay.h
         src/physics/orbit.cpp
         src/physics/orbit.h
+        src/game/world.cpp
+        src/game/world.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)
