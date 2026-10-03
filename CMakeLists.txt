@@ -83,6 +83,7 @@ add_executable(StellarTests
         tests/sanity_tests.cpp
         tests/camera_tests.cpp
         tests/orbit_tests.cpp
+        tests/world_tests.cpp
 )
 target_link_libraries(StellarTests PRIVATE StellarEngine Catch2::Catch2WithMain stellar_warnings)
 
