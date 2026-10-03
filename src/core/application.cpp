@@ -1,6 +1,6 @@
 /**
  * @file application.cpp
- * @brief
+ * @brief Main loop, input handling and scene rendering.
  * @author DreGi0
  * @date September 25th, 2026
  */
@@ -15,7 +15,6 @@
 
 #include "application.h"
 #include "core/paths.h"
-
 
 // Model geometry
 constexpr float CUBE_VERTICES[] = {

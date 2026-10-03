@@ -1,6 +1,6 @@
 /**
  * @file debug_overlay.cpp
- * @brief
+ * @brief Implementation of DebugOverlay: ImGui setup and the debug panel.
  * @author DreGi0
  * @date September 26th, 2026
  */

@@ -1,6 +1,6 @@
 /**
  * @file camera_tests.cpp
- * @brief
+ * @brief Camera movement and rotation tests.
  * @author DreGi0
  * @date September 26th, 2026
  */

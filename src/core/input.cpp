@@ -1,6 +1,6 @@
 /**
  * @file input.cpp
- * @brief
+ * @brief Implementation of Input over GLFW.
  * @author DreGi0
  * @date September 27th, 2026
  */
@@ -35,7 +35,6 @@ namespace Stellar
         m_previous[key] = keyIsDown;
 
         return justPressed;
-
     }
 
     glm::dvec2 Input::mouseDelta()

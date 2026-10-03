@@ -1,6 +1,6 @@
 /**
  * @file world.cpp
- * @brief
+ * @brief World simulation rules: stepping, time warp and burns.
  * @author DreGi0
  * @date October 2nd, 2026
  */
