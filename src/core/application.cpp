@@ -10,7 +10,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <imgui.h>
 #include <cmath>
 #include <vector>
 
@@ -93,18 +92,6 @@ constexpr float MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
-
-constexpr const char* INTEGRATOR_NAMES[] = {
-    "Explicit Euler",
-    "Semi-implicit Euler",
-    "Velocity Verlet",
-    "Kepler (on rails)",
-};
-
-constexpr const char* TIME_WARP_NAMES[] = {
-    "x1", "x5", "x10", "x50", "x100", "x1000", "x10000", "x100000",
-};
-
 
 namespace Stellar
 {
@@ -241,76 +228,6 @@ namespace Stellar
         }
 
         // DEBUG OVERLAY
-        const double energy = specificEnergy(vessel.state, ORBIT_MU);
-        const double drift = glm::abs(energy - m_world.initialEnergy()) / glm::abs(m_world.initialEnergy());
-
-        m_debugOverlay.beginFrame();
-
-        ImGui::Begin("Debug");
-        ImGui::Text("Stellar Program");
-        ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-        ImGui::Text("Camera Position:\nX %.3f, Y %.3f, Z %.3f", m_camera.getPosition().x, m_camera.getPosition().y, m_camera.getPosition().z);
-
-        ImGui::Separator();
-
-        int integrator = m_world.integratorIndex();
-
-        if (ImGui::Combo("Integrator", &integrator, INTEGRATOR_NAMES, IM_ARRAYSIZE(INTEGRATOR_NAMES)))
-        {
-            m_world.setIntegrator(integrator);   // resets the orbit inside World
-        }
-
-        if (ImGui::Button("Reset orbit"))
-        {
-            m_world.reset();
-        }
-
-        const bool onRails = m_world.isOnRails();
-
-        int timeWarp = m_world.timeWarpIndex();
-
-        ImGui::BeginDisabled(!onRails);
-        if (ImGui::Combo("Time warp", &timeWarp, TIME_WARP_NAMES, IM_ARRAYSIZE(TIME_WARP_NAMES)))
-        {
-            m_world.setTimeWarp(timeWarp);
-        }
-        ImGui::EndDisabled();
-
-        if (!onRails)
-        {
-            ImGui::TextDisabled("Time warp needs Kepler (on rails)");
-        }
-
-        ImGui::Text("Mission time: %.1f s", m_world.missionTime());
-
-        if (m_world.isBurning())
-        {
-            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.2f, 1.0f), "ENGINE ON - off rails (physics warp x%.0f)", m_world.physicsWarp());
-        }
-        else
-        {
-            ImGui::Text("Engine off - %s", onRails ? "on rails" : "step by step");
-        }
-
-        ImGui::TextDisabled("Burn: Up/Down prograde/retrograde, Right/Left normal/antinormal");
-
-        ImGui::Text("Orbit radius: %.4f", glm::length(vessel.state.position));
-        ImGui::Text("Energy: %.6f", energy);
-        ImGui::Text("Energy drift: %.12f", drift);
-
-        ImGui::Separator();
-
-        ImGui::Text("Periapsis: %.4f", elements.semiMajorAxis * (1.0 - elements.eccentricity));
-        ImGui::Text("Apoapsis:  %.4f", elements.semiMajorAxis * (1.0 + elements.eccentricity));
-        ImGui::Text("a (semi-major axis): %.6f", elements.semiMajorAxis);
-        ImGui::Text("e (eccentricity): %.6f", elements.eccentricity);
-        ImGui::Text("i (inclination): %.3f deg", glm::degrees(elements.inclination));
-        ImGui::Text("LAN (Omega): %.3f deg", glm::degrees(elements.longitudeOfAscendingNode));
-        ImGui::Text("Arg. periapsis (w): %.3f deg", glm::degrees(elements.argumentOfPeriapsis));
-        ImGui::Text("True anomaly (nu): %.3f deg", glm::degrees(elements.trueAnomaly));
-
-        ImGui::End();
-
-        m_debugOverlay.endFrame();
+        m_debugOverlay.draw(m_world, m_camera);
     }
 } // Stellar
