@@ -27,6 +27,7 @@ namespace Stellar
     m_graphicsContext(),
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
+    m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
     m_sphereMesh(unitSphere(32, 64)),
     m_orbitMesh(unitCircle(256), GL_LINE_LOOP),
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f))
@@ -103,14 +104,8 @@ namespace Stellar
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_shader.use();
-
-        // COLOR
-        m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
-
         // VIEW
         const auto viewMatrix = m_camera.getViewMatrix();
-        m_shader.setMat4("uView", glm::value_ptr(viewMatrix));
 
         // PROJECTION
         int fbWidth = 0, fbHeight = 0;
@@ -121,13 +116,19 @@ namespace Stellar
             : 1.0f;
 
         const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-        m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+
+        // LIT OBJECTS (spheres)
+        m_litShader.use();
+        m_litShader.setMat4("uView", glm::value_ptr(viewMatrix));
+        m_litShader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+        m_litShader.setVec3("uLightDir", 1.0f, 0.5f, 0.3f); // Toward the "Sun", fixed for now
 
         // MODEL - "Earth"
         const glm::dvec3 centralRelativeToCam = CENTRAL_BODY_POSITION - m_camera.getPosition();
         const auto centralModel = glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam));
 
-        m_shader.setMat4("uModel", glm::value_ptr(centralModel));
+        m_litShader.setVec3("uColor", 0.25f, 0.45f, 0.9f);
+        m_litShader.setMat4("uModel", glm::value_ptr(centralModel));
         m_sphereMesh.draw();
 
         // MODEL - "Earth's Satellite"
@@ -140,8 +141,15 @@ namespace Stellar
         const glm::dvec3 orbiterRelativeToCam = CENTRAL_BODY_POSITION + orbitPosition - m_camera.getPosition();
         const auto orbiterModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam)), glm::vec3(0.5f));
 
-        m_shader.setMat4("uModel", glm::value_ptr(orbiterModel));
+        m_litShader.setVec3("uColor", 0.9f, 0.9f, 0.9f);
+        m_litShader.setMat4("uModel", glm::value_ptr(orbiterModel));
         m_sphereMesh.draw();
+
+        // UNLIT OBJECTS (orbit line)
+        m_shader.use();
+        m_shader.setMat4("uView", glm::value_ptr(viewMatrix));
+        m_shader.setMat4("uProjection", glm::value_ptr(projectionMatrix));
+        m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL - Orbit line (ellipses only)
         const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);

@@ -48,6 +48,7 @@ namespace Stellar
         GraphicsContext m_graphicsContext;
         DebugOverlay m_debugOverlay;
         Shader m_shader;
+        Shader m_litShader;
         Mesh m_sphereMesh;
         Mesh m_orbitMesh;
         Camera m_camera;
