@@ -1,6 +1,6 @@
 /**
  * @file orbit.cpp
- * @brief
+ * @brief Implementation of the orbital mechanics functions.
  * @author DreGi0
  * @date September 26th, 2026
  */
