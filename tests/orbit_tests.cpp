@@ -1,6 +1,6 @@
 /**
  * @file orbit_tests.cpp
- * @brief
+ * @brief Integrator energy drift, element conversions and Kepler propagation tests.
  * @author DreGi0
  * @date September 26th, 2026
  */

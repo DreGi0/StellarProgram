@@ -1,6 +1,6 @@
 /**
  * @file graphics_context.cpp
- * @brief
+ * @brief Implementation of GraphicsContext: GLAD loading and GPU info.
  * @author DreGi0
  * @date September 25th, 2026
  */
