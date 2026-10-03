@@ -123,6 +123,8 @@ namespace Stellar
             double frameTime = time - m_lastFrameTime;
             m_lastFrameTime = time;
 
+            m_input.update();
+
             processInput(static_cast<float>(frameTime));
 
             frameTime = glm::min(frameTime, 0.25);
@@ -145,14 +147,14 @@ namespace Stellar
 
     void Application::processInput(const float deltaTime)
     {
-        if (m_input.wasPressed(GLFW_KEY_TAB))
+        if (m_input.wasPressed(Action::ToggleCursor))
         {
             m_input.setCursorCaptured(!m_input.isCursorCaptured());
         }
 
         m_world.vessel().burn = glm::dvec2(
-            m_input.axis(GLFW_KEY_UP, GLFW_KEY_DOWN),
-            m_input.axis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT));
+            m_input.axis(Action::BurnPrograde),
+            m_input.axis(Action::BurnNormal));
 
         if (!m_input.isCursorCaptured())
         {
@@ -162,8 +164,8 @@ namespace Stellar
         // CAMERA
         const float step = MOVE_SPEED * deltaTime;
 
-        m_camera.moveForward(step * static_cast<float>(m_input.axis(GLFW_KEY_W, GLFW_KEY_S)));
-        m_camera.moveRight(step * static_cast<float>(m_input.axis(GLFW_KEY_D, GLFW_KEY_A)));
+        m_camera.moveForward(step * static_cast<float>(m_input.axis(Action::MoveForward)));
+        m_camera.moveRight(step * static_cast<float>(m_input.axis(Action::MoveRight)));
 
         const glm::dvec2 mouse = m_input.mouseDelta() * static_cast<double>(MOUSE_SENSITIVITY);
 

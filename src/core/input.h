@@ -8,11 +8,15 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <glm/vec2.hpp>
 #include <GLFW/glfw3.h>
 
 namespace Stellar
 {
+    /// Things the player can do, independent of the device (keyboard or gamepad).
+    enum class Action { ToggleCursor, BurnPrograde, BurnNormal, MoveForward, MoveRight, Count };
+
     /**
      * @class Input
      * @brief Reads the keyboard and the mouse of a GLFW window and owns the cursor capture.
@@ -29,27 +33,23 @@ namespace Stellar
         explicit Input(GLFWwindow* window);
 
         /**
-         * @brief Checks if a key is held down right now.
-         * @param key GLFW key code (e.g. GLFW_KEY_W).
-         * @return true while the key is pressed.
+         * @brief Reads the keyboard and the gamepad. Call it once per frame, before asking for actions.
          */
-        [[nodiscard]] bool isDown(int key) const;
+        void update();
 
         /**
-         * @brief Turns two opposite keys into one value, like a joystick axis.
-         * @param positiveKey Key that pushes the value to +1.
-         * @param negativeKey Key that pushes the value to -1.
-         * @return +1, -1, or 0 when neither or both are pressed.
+         * @brief Value of an action, from the keyboard or the gamepad (whichever is pushed more).
+         * @param action Action to read.
+         * @return -1..1; keys give exactly -1, 0 or 1, sticks give anything in between.
          */
-        [[nodiscard]] double axis(int positiveKey, int negativeKey) const;
+        [[nodiscard]] double axis(Action action) const;
 
         /**
-         * @brief Checks if a key went down this frame (it was up the last time it was asked).
-         * @warning Call it once per frame per key; a second call in the same frame returns false.
-         * @param key GLFW key code.
-         * @return true only on the frame the key is pressed.
+         * @brief Checks if an action became active this frame.
+         * @param action Action to check.
+         * @return true only on the frame it goes from 0 to non-zero.
          */
-        [[nodiscard]] bool wasPressed(int key);
+        [[nodiscard]] bool wasPressed(Action action) const;
 
         /**
          * @brief Checks if the cursor is captured (hidden and locked to the window).
@@ -70,9 +70,10 @@ namespace Stellar
         void setCursorCaptured(bool captured);
 
         private:
+        [[nodiscard]] bool isDown(int key) const;
         GLFWwindow* m_window;
 
-        std::array<bool, GLFW_KEY_LAST + 1> m_previous {}; // Key state seen by the last wasPressed call
+        std::array<double, static_cast<std::size_t>(Action::Count)> m_current {}, m_previous {};
 
         bool m_cursorCaptured = true;
         double m_lastMouseX = 0.0;
