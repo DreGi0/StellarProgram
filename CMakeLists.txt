@@ -49,6 +49,8 @@ add_library(StellarEngine STATIC
         src/game/world.h
         src/graphics/primitives.cpp
         src/graphics/primitives.h
+        src/graphics/orbit_camera.cpp
+        src/graphics/orbit_camera.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)

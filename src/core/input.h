@@ -15,7 +15,7 @@
 namespace Stellar
 {
     /// Things the player can do, independent of the device (keyboard or gamepad).
-    enum class Action { ToggleCursor, BurnPrograde, BurnNormal, MoveForward, MoveRight, Count };
+    enum class Action { ToggleCursor, BurnPrograde, BurnNormal, MoveForward, MoveRight, ToggleCamera, LookRight, LookUp, Count };
 
     /**
      * @class Input

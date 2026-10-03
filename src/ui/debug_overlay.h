@@ -7,12 +7,13 @@
 
 #pragma once
 
+#include <glm/vec3.hpp>
+
 struct GLFWwindow;
 
 namespace Stellar
 {
     class World;
-    class Camera;
 
     class DebugOverlay
     {
@@ -32,7 +33,7 @@ namespace Stellar
          * @brief Draws the debug panel. Reads the world and the camera, and lets the user
          *        change the integrator, the time warp and reset the orbit.
          */
-        void draw(World& world, const Camera& camera) const;
+        void draw(World& world, const glm::dvec3& cameraPosition) const;
 
         private:
         void beginFrame() const;
