@@ -47,6 +47,8 @@ add_library(StellarEngine STATIC
         src/physics/orbit.h
         src/game/world.cpp
         src/game/world.h
+        src/graphics/primitives.cpp
+        src/graphics/primitives.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)
@@ -84,6 +86,7 @@ add_executable(StellarTests
         tests/camera_tests.cpp
         tests/orbit_tests.cpp
         tests/world_tests.cpp
+        tests/primitives_tests.cpp
 )
 target_link_libraries(StellarTests PRIVATE StellarEngine Catch2::Catch2WithMain stellar_warnings)
 
