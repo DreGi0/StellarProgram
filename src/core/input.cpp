@@ -54,6 +54,24 @@ namespace
             .gamepadAxis = -1,
             .gamepadSign = 0.0
         }, // MoveRight
+        {
+            .positiveKey = GLFW_KEY_C,
+            .negativeKey = GLFW_KEY_UNKNOWN,
+            .gamepadAxis = -1,
+            .gamepadSign = 0.0
+        }, // ToggleCamera
+        {
+            .positiveKey = GLFW_KEY_UNKNOWN,
+            .negativeKey = GLFW_KEY_UNKNOWN,
+            .gamepadAxis = GLFW_GAMEPAD_AXIS_RIGHT_X,
+            .gamepadSign = 1.0
+        }, // LookRight
+        {
+            .positiveKey = GLFW_KEY_UNKNOWN,
+            .negativeKey = GLFW_KEY_UNKNOWN,
+            .gamepadAxis = GLFW_GAMEPAD_AXIS_RIGHT_Y,
+            .gamepadSign = -1.0
+        }, // LookUp
     }};
 
     constexpr double STICK_DEADZONE = 0.15;
