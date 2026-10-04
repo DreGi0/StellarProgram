@@ -24,7 +24,7 @@ TEST_CASE("Burning disables time warp and caps physics warp")
     Stellar::World world;
 
     world.setTimeWarp(7); // x100000, the highest level
-    world.vessel().burn = glm::dvec2(1.0, 0.0);
+    world.setBurn(glm::dvec2(1.0, 0.0));
 
     CHECK(world.isBurning());
     CHECK(world.timeWarp() == 1.0);

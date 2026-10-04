@@ -64,10 +64,10 @@ namespace Stellar
     void DebugOverlay::draw(World& world, const glm::dvec3& cameraPosition) const
     {
 
-        const Vessel& vessel = world.vessel();
-        const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);
+        const GameObject& vessel = world.vessel();
+        const OrbitalElements elements = stateToElements(orbitalState(vessel), ORBIT_MU);
 
-        const double energy = specificEnergy(vessel.state, ORBIT_MU);
+        const double energy = specificEnergy(orbitalState(vessel), ORBIT_MU);
         const double drift = glm::abs(energy - world.initialEnergy()) / glm::abs(world.initialEnergy());
 
         beginFrame();
@@ -120,7 +120,7 @@ namespace Stellar
 
         ImGui::TextDisabled("Burn: Up/Down prograde/retrograde, Right/Left normal/antinormal");
 
-        ImGui::Text("Orbit radius: %.4f", glm::length(vessel.state.position));
+        ImGui::Text("Orbit radius: %.4f", glm::length(vessel.transform.position));
         ImGui::Text("Energy: %.6f", energy);
         ImGui::Text("Energy drift: %.12f", drift);
 

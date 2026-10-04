@@ -1,15 +1,17 @@
 /**
  * @file world.h
- * @brief The simulated world: central body, vessel, mission clock and time warp.
+ * @brief The simulated world: central body, game objects, mission clock and time warp.
  * @author DreGi0
  * @date October 2nd, 2026
  */
 
 #pragma once
 
+#include <vector>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include "game_object.h"
 #include "physics/orbit.h"
 
 namespace Stellar
@@ -19,22 +21,18 @@ namespace Stellar
     inline constexpr double ORBIT_MU = 1000.0;
     inline constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
 
-    /**
-     * @struct Vessel
-     * @brief Provisional representation of the object orbiting the central body.
-     */
-    struct Vessel
+    /// Position + velocity of an object in the form the orbit functions expect.
+    inline OrbitalState orbitalState(const GameObject& object)
     {
-        OrbitalState state{}; ///< Position and velocity relative to the central body
-        glm::dvec3 previousPosition = glm::dvec3(0.0); ///< Position before the last step, for render interpolation
-        glm::dvec2 burn = glm::dvec2(0.0); ///< Burn command: x = prograde (+) / retrograde (-), y = normal (+) / antinormal (-)
-    };
+        return {
+            .position = object.transform.position,
+            .velocity = object.velocity
+        };
+    }
 
     /**
      * @class World
      * @brief Owns the simulation state and advances it in fixed steps.
-     *
-     * Knows nothing about OpenGL, GLFW or ImGui, so it can be tested without a window.
      */
     class World
     {
@@ -47,8 +45,8 @@ namespace Stellar
         /**
          * @brief Advances the simulation one fixed step.
          *
-         * Engine off: moves the vessel with the selected integrator, with time warp applied.
-         * Engine on: leaves the rails and steps with Verlet plus thrust, without time warp.
+         * Engine off: moves every object with the selected integrator, with time warp applied.
+         * Engine on: the vessel leaves the rails and steps with Verlet plus thrust, without time warp.
          * @param deltaTime Real seconds in this step (the fixed timestep).
          */
         void update(double deltaTime);
@@ -59,14 +57,25 @@ namespace Stellar
         void reset();
 
         /**
-         * @brief The vessel, writable (e.g. to set the burn command).
+         * @brief The vessel, writable. Always the first object.
          */
-        Vessel& vessel();
+        GameObject& vessel();
 
         /**
-         * @brief The vessel, read-only (e.g. for rendering).
+         * @brief The vessel, read-only (e.g. for rendering). Always the first object.
          */
-        [[nodiscard]] const Vessel& vessel() const;
+        [[nodiscard]] const GameObject& vessel() const;
+
+        /**
+         * @brief Every object in the world, the vessel first.
+         */
+        [[nodiscard]] const std::vector<GameObject>& objects() const;
+
+        /**
+         * @brief Sets the vessel's burn command.
+         * @param burn x = prograde (+) / retrograde (-), y = normal (+) / antinormal (-).
+         */
+        void setBurn(const glm::dvec2& burn);
 
         /**
          * @brief Selects the integrator and resets the orbit, so each one starts from the same state.
@@ -125,7 +134,7 @@ namespace Stellar
         [[nodiscard]] bool isBurning() const;
 
         private:
-        Vessel m_vessel;
+        std::vector<GameObject> m_objects; // The vessel is always the first one (see reset)
         double m_initialEnergy = 0.0;
         // Lab tool from step 10 to compare integrators; goes away once Kepler/Verlet are the only path
         int m_integratorIndex = 3;
