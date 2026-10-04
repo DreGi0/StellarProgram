@@ -54,6 +54,7 @@ add_library(StellarEngine STATIC
         src/graphics/orbit_camera.h
         src/audio/audio.cpp
         src/audio/audio.h
+        src/game/game_object.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)

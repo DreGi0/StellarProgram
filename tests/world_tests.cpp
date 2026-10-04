@@ -24,7 +24,7 @@ TEST_CASE("Burning disables time warp and caps physics warp")
     Stellar::World world;
 
     world.setTimeWarp(7); // x100000, the highest level
-    world.vessel().burn = glm::dvec2(1.0, 0.0);
+    world.setBurn(glm::dvec2(1.0, 0.0));
 
     CHECK(world.isBurning());
     CHECK(world.timeWarp() == 1.0);
@@ -46,4 +46,13 @@ TEST_CASE("Changing the integrator resets the mission")
 
     CHECK(world.missionTime() == 0.0);
     CHECK_FALSE(world.isOnRails());
+}
+
+TEST_CASE("A new World holds the vessel as its first object")
+{
+    const Stellar::World world;
+
+    REQUIRE(world.objects().size() == 1);
+    CHECK(&world.vessel() == &world.objects().front());
+    CHECK(world.vessel().vessel.has_value());
 }

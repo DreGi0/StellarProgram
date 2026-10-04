@@ -1,6 +1,6 @@
 /**
  * @file world.cpp
- * @brief World simulation rules: stepping, time warp and burns.
+ * @brief World simulation rules: stepping every object, time warp and burns.
  * @author DreGi0
  * @date October 2nd, 2026
  */
@@ -44,44 +44,70 @@ namespace Stellar
 
     void World::update(const double deltaTime)
     {
-        m_vessel.previousPosition = m_vessel.state.position;
+        const double dt = deltaTime * timeWarp();
+
+        for (GameObject& object : m_objects)
+        {
+            object.previousPosition = object.transform.position;
+            OrbitalState state = orbitalState(object);
+
+            if (object.vessel && object.vessel->burn != glm::dvec2(0.0))
+            {
+                // Engine on: the orbit is changing, so leave the rails and step with Verlet
+                const glm::dvec3 thrust = THRUST_ACCELERATION * burnDirection(state, object.vessel->burn.x, object.vessel->burn.y);
+                state = stepVelocityVerletWithThrust(state, ORBIT_MU, dt, thrust);
+            }
+            else
+            {
+                state = INTEGRATORS[m_integratorIndex](state, ORBIT_MU, dt);
+            }
+
+            object.transform.position = state.position;
+            object.velocity = state.velocity;
+        }
+
+        m_missionTime += dt;
 
         if (isBurning())
         {
-            // Engine on: the orbit is changing, so leave the rails and step the physics with Verlet
-            const glm::dvec3 thrust = THRUST_ACCELERATION * burnDirection(m_vessel.state, m_vessel.burn.x, m_vessel.burn.y);
-
-            m_vessel.state = stepVelocityVerletWithThrust(m_vessel.state, ORBIT_MU, deltaTime, thrust);
-            m_missionTime += deltaTime;
-
-            // The burn changes the energy on purpose; measure drift from the new orbit instead
-            m_initialEnergy = specificEnergy(m_vessel.state, ORBIT_MU);
-            return;
+            m_initialEnergy = specificEnergy(orbitalState(vessel()), ORBIT_MU);
         }
-
-        const double warpedDt = deltaTime * timeWarp();
-
-        m_vessel.state = INTEGRATORS[m_integratorIndex](m_vessel.state, ORBIT_MU, warpedDt);
-        m_missionTime += warpedDt;
     }
 
     void World::reset()
     {
-        m_vessel.state = elementsToState(START_ORBIT, ORBIT_MU);
-        m_vessel.previousPosition = m_vessel.state.position;
-        m_initialEnergy = specificEnergy(m_vessel.state, ORBIT_MU);
+        m_objects.clear();
 
+        const OrbitalState start = elementsToState(START_ORBIT, ORBIT_MU);
+
+        GameObject& vessel = m_objects.emplace_back();
+        vessel.transform.position = start.position;
+        vessel.velocity = start.velocity;
+        vessel.previousPosition = start.position;
+        vessel.vessel.emplace();
+
+        m_initialEnergy = specificEnergy(start, ORBIT_MU);
         m_missionTime = 0.0;
     }
 
-    Vessel& World::vessel()
+    GameObject& World::vessel()
     {
-        return m_vessel;
+        return m_objects.front();
     }
 
-    const Vessel& World::vessel() const
+    const GameObject& World::vessel() const
     {
-        return m_vessel;
+        return m_objects.front();
+    }
+
+    void World::setBurn(const glm::dvec2& burn)
+    {
+        vessel().vessel->burn = burn;
+    }
+
+    const std::vector<GameObject>& World::objects() const
+    {
+        return m_objects;
     }
 
     void World::setIntegrator(const int index)
@@ -134,6 +160,6 @@ namespace Stellar
 
     bool World::isBurning() const
     {
-        return m_vessel.burn != glm::dvec2(0.0);
+        return vessel().vessel->burn != glm::dvec2(0.0);
     }
 } // Stellar

@@ -90,9 +90,9 @@ namespace Stellar
             m_useOrbitCamera = !m_useOrbitCamera;
         }
 
-        m_world.vessel().burn = glm::dvec2(
+        m_world.setBurn(glm::dvec2(
             m_input.axis(Action::BurnPrograde),
-            m_input.axis(Action::BurnNormal));
+            m_input.axis(Action::BurnNormal)));
 
         m_audio.setEngineBurning(m_world.isBurning());
 
@@ -131,13 +131,13 @@ namespace Stellar
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // VESSEL POSITION
-        const Vessel& vessel = m_world.vessel();
+        const GameObject& vessel = m_world.vessel();
 
         const double interpolation = m_world.timeWarp() > 1.0 ? 1.0 : static_cast<double>(alpha);
-        const glm::dvec3 orbitPosition = glm::mix(vessel.previousPosition, vessel.state.position, interpolation);
+        const glm::dvec3 orbitPosition = glm::mix(vessel.previousPosition, vessel.transform.position, interpolation);
         const glm::dvec3 vesselPosition = CENTRAL_BODY_POSITION + orbitPosition;
 
-        m_orbitCamera.setFrame(orbitPosition, vessel.state.velocity);
+        m_orbitCamera.setFrame(orbitPosition, vessel.velocity);
 
         // CAMERA
         const glm::dvec3 cameraPosition = m_useOrbitCamera
@@ -188,7 +188,7 @@ namespace Stellar
         m_shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
         // MODEL - Orbit line (ellipses only)
-        const OrbitalElements elements = stateToElements(vessel.state, ORBIT_MU);
+        const OrbitalElements elements = stateToElements(orbitalState(vessel), ORBIT_MU);
 
         if (elements.eccentricity < 1.0)
         {
