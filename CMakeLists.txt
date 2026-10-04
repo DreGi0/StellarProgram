@@ -20,6 +20,7 @@ find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(Catch2 3 CONFIG REQUIRED)
+find_path(MINIAUDIO_INCLUDE_DIR miniaudio.h REQUIRED)
 
 # ENGINE LIBRARY
 add_library(StellarEngine STATIC
@@ -51,9 +52,12 @@ add_library(StellarEngine STATIC
         src/graphics/primitives.h
         src/graphics/orbit_camera.cpp
         src/graphics/orbit_camera.h
+        src/audio/audio.cpp
+        src/audio/audio.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)
+target_include_directories(StellarEngine SYSTEM PRIVATE ${MINIAUDIO_INCLUDE_DIR})
 
 target_link_libraries(StellarEngine
         PUBLIC
@@ -63,6 +67,7 @@ target_link_libraries(StellarEngine
         PRIVATE
         imgui::imgui
         stellar_warnings
+        ${CMAKE_DL_LIBS}
 )
 
 target_compile_definitions(StellarEngine
