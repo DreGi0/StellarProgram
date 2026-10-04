@@ -47,3 +47,12 @@ TEST_CASE("Changing the integrator resets the mission")
     CHECK(world.missionTime() == 0.0);
     CHECK_FALSE(world.isOnRails());
 }
+
+TEST_CASE("A new World holds the vessel as its first object")
+{
+    const Stellar::World world;
+
+    REQUIRE(world.objects().size() == 1);
+    CHECK(&world.vessel() == &world.objects().front());
+    CHECK(world.vessel().vessel.has_value());
+}
