@@ -18,6 +18,7 @@
 #include "graphics/camera.h"
 #include "graphics/orbit_camera.h"
 #include "ui/debug_overlay.h"
+#include "audio/audio.h"
 
 namespace Stellar
 {
@@ -46,6 +47,7 @@ namespace Stellar
         // ORDER MATTERS: constructed top to bottom and destroyed bottom to top
         Window m_window;
         Input m_input;
+        Audio m_audio;
         GraphicsContext m_graphicsContext;
         DebugOverlay m_debugOverlay;
         Shader m_shader;

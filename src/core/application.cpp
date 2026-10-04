@@ -94,6 +94,8 @@ namespace Stellar
             m_input.axis(Action::BurnPrograde),
             m_input.axis(Action::BurnNormal));
 
+        m_audio.setEngineBurning(m_world.isBurning());
+
         if (!m_input.isCursorCaptured())
         {
             return;
