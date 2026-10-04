@@ -85,6 +85,7 @@ namespace Stellar
         vessel.velocity = start.velocity;
         vessel.previousPosition = start.position;
         vessel.vessel.emplace();
+        vessel.transform.scale = 0.5;
 
         m_initialEnergy = specificEnergy(start, ORBIT_MU);
         m_missionTime = 0.0;
