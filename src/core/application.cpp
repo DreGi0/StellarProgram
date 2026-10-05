@@ -29,6 +29,7 @@ namespace Stellar
     m_window(800, 600, "Stellar Program"),
     m_input(m_window.getHandle()),
     m_graphicsContext(),
+    m_framebuffer(800, 600),
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
@@ -37,7 +38,6 @@ namespace Stellar
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f)),
     m_orbitCamera(10.0)
     {
-        // Viewport adjustment
         int fbWidth = 0;
         int fbHeight = 0;
         m_window.getFramebufferSize(fbWidth, fbHeight);
@@ -128,6 +128,13 @@ namespace Stellar
 
     void Application::render(const float alpha)
     {
+        int fbWidth = 0, fbHeight = 0;
+        m_window.getFramebufferSize(fbWidth, fbHeight);
+
+        m_framebuffer.resize(fbWidth, fbHeight);
+        m_framebuffer.bind();
+        glViewport(0, 0, fbWidth, fbHeight);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // VESSEL POSITION
@@ -150,9 +157,6 @@ namespace Stellar
             : m_camera.getViewMatrix();
 
         // PROJECTION
-        int fbWidth = 0, fbHeight = 0;
-        m_window.getFramebufferSize(fbWidth, fbHeight);
-
         const float aspectRatio = (fbHeight > 0)
             ? static_cast<float>(fbWidth) / static_cast<float>(fbHeight)
             : 1.0f;
@@ -198,6 +202,8 @@ namespace Stellar
             m_shader.setMat4("uModel", glm::value_ptr(orbitModelF));
             m_orbitMesh.draw();
         }
+
+        m_framebuffer.blitToScreen();
 
         // DEBUG OVERLAY
         m_debugOverlay.draw(m_world, cameraPosition);

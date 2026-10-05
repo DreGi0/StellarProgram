@@ -17,6 +17,7 @@
 #include "graphics/mesh.h"
 #include "graphics/camera.h"
 #include "graphics/orbit_camera.h"
+#include "graphics/framebuffer.h"
 #include "ui/debug_overlay.h"
 #include "audio/audio.h"
 
@@ -49,6 +50,7 @@ namespace Stellar
         Input m_input;
         Audio m_audio;
         GraphicsContext m_graphicsContext;
+        Framebuffer m_framebuffer;
         DebugOverlay m_debugOverlay;
         Shader m_shader;
         Shader m_litShader;
