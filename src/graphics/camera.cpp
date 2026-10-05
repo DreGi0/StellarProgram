@@ -40,4 +40,17 @@ namespace Stellar
 
         m_forward = glm::normalize(glm::vec3(glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch)), glm::sin(glm::radians(m_pitch)), glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch))));
     }
+
+    glm::mat4 reversedInfinitePerspective(const float fovY, const float aspect, const float nearPlane)
+    {
+        const float f = 1.0f / std::tan(fovY / 2.0f);
+
+        glm::mat4 projection(0.0f);
+        projection[0][0] = f / aspect;
+        projection[1][1] = f;
+        projection[2][3] = -1.0f; // w = distance in front of the camera (perspective divide)
+        projection[3][2] = nearPlane; // z = nearPlane, so depth = nearPlane / distance
+
+        return projection;
+    }
 } // Stellar
