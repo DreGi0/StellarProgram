@@ -94,3 +94,17 @@ TEST_CASE("orbit camera 'up' points away from the planet") {
     const glm::dvec3 direction = glm::normalize(camera.offset());
     REQUIRE(direction.y == Catch::Approx(glm::sin(glm::radians(89.0))));
 }
+
+TEST_CASE("reversed infinite projection: depth 1 at the near plane, toward 0 far away") {
+    const glm::mat4 projection = Stellar::reversedInfinitePerspective(glm::radians(45.0f), 1.0f, 0.1f);
+
+    // Depth after the perspective divide, for a point straight ahead
+    const auto depth = [&](const float distance) {
+        const glm::vec4 clip = projection * glm::vec4(0.0f, 0.0f, -distance, 1.0f);
+        return clip.z / clip.w;
+    };
+
+    REQUIRE(depth(0.1f) == Catch::Approx(1.0f));
+    REQUIRE(depth(1'000'000.0f) == Catch::Approx(0.0f).margin(1e-6));
+    REQUIRE(depth(10.0f) > depth(1'000.0f)); // Closer = bigger (GL_GREATER)
+}

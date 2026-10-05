@@ -23,6 +23,8 @@ constexpr double ZOOM_SPEED = 2.0;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
 
+constexpr float NEAR_PLANE = 0.1f;
+
 namespace Stellar
 {
     Application::Application() :
@@ -38,13 +40,13 @@ namespace Stellar
     m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f)),
     m_orbitCamera(10.0)
     {
-        int fbWidth = 0;
-        int fbHeight = 0;
-        m_window.getFramebufferSize(fbWidth, fbHeight);
-        glViewport(0, 0, fbWidth, fbHeight);
-
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
+
+        // Reversed-Z: depth 1 at the near plane, 0 at infinity (float depth is most precise near 0)
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // Depth range 0..1 instead of -1..1
+        glClearDepth(0.0); // "Farthest" is now 0
+        glDepthFunc(GL_GREATER); // Closer = bigger depth wins
 
         m_lastFrameTime = glfwGetTime();
     }
@@ -161,7 +163,7 @@ namespace Stellar
             ? static_cast<float>(fbWidth) / static_cast<float>(fbHeight)
             : 1.0f;
 
-        const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+        const auto projectionMatrix = reversedInfinitePerspective(glm::radians(45.0f), aspectRatio, NEAR_PLANE);
 
         // LIT OBJECTS (spheres)
         m_litShader.use();
