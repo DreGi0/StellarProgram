@@ -36,7 +36,7 @@ namespace Stellar
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
     m_sphereMesh(unitSphere(32, 64)),
-    m_orbitMesh(unitCircle(256), GL_LINE_LOOP),
+    m_orbitMesh(unitCircle(8192), GL_LINE_LOOP),
     m_camera(CENTRAL_BODY_POSITION + glm::dvec3(0.0, 0.0, 3.0 * PLANET_RADIUS)),
     m_orbitCamera(10.0)
     {
