@@ -10,7 +10,7 @@
 #include <glm/trigonometric.hpp>
 #include <glm/common.hpp>
 
-constexpr double THRUST_ACCELERATION = 5.0;
+constexpr double THRUST_ACCELERATION = 50.0;
 constexpr double MAX_PHYSICS_WARP = 4.0;
 
 // Starting orbit, described with elements instead of position + velocity

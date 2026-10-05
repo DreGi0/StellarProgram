@@ -15,9 +15,8 @@
 #include "application.h"
 #include "core/paths.h"
 
-constexpr float MOVE_SPEED = 10.0f;
+constexpr float CAMERA_MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
-
 constexpr float STICK_LOOK_SPEED = 120.0f;
 constexpr double ZOOM_SPEED = 2.0;
 
@@ -36,6 +35,7 @@ namespace Stellar
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
     m_sphereMesh(unitSphere(32, 64)),
+    m_planetMesh(unitSphere(512, 1024)),
     m_orbitMesh(unitCircle(8192), GL_LINE_LOOP),
     m_camera(CENTRAL_BODY_POSITION + glm::dvec3(0.0, 0.0, 3.0 * PLANET_RADIUS)),
     m_orbitCamera(10.0)
@@ -122,7 +122,7 @@ namespace Stellar
         // FREE CAMERA (debug)
         // Speed grows with altitude: slow near the ground, fast far away (about one altitude per second)
         const double altitude = glm::length(m_camera.getPosition() - CENTRAL_BODY_POSITION) - PLANET_RADIUS;
-        const float step = deltaTime * static_cast<float>(glm::max(static_cast<double>(MOVE_SPEED), altitude));
+        const float step = deltaTime * static_cast<float>(glm::max(static_cast<double>(CAMERA_MOVE_SPEED), altitude));
 
         m_camera.moveForward(step * static_cast<float>(m_input.axis(Action::MoveForward)));
         m_camera.moveRight(step * static_cast<float>(m_input.axis(Action::MoveRight)));
@@ -179,7 +179,7 @@ namespace Stellar
 
         m_litShader.setVec3("uColor", 0.25f, 0.45f, 0.9f);
         m_litShader.setMat4("uModel", glm::value_ptr(centralModel));
-        m_sphereMesh.draw();
+        m_planetMesh.draw();
 
         // MODE - Satellite
         const glm::dvec3 orbiterRelativeToCam =  vesselPosition - cameraPosition;
