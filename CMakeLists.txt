@@ -55,6 +55,8 @@ add_library(StellarEngine STATIC
         src/audio/audio.cpp
         src/audio/audio.h
         src/game/game_object.h
+        src/graphics/framebuffer.cpp
+        src/graphics/framebuffer.h
 )
 
 target_include_directories(StellarEngine PUBLIC src)
