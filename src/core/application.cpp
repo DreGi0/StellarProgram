@@ -15,13 +15,14 @@
 #include "application.h"
 #include "core/paths.h"
 
-constexpr float MOVE_SPEED = 10.0f;
+constexpr float CAMERA_MOVE_SPEED = 10.0f;
 constexpr float MOUSE_SENSITIVITY = 0.1f;
-
 constexpr float STICK_LOOK_SPEED = 120.0f;
 constexpr double ZOOM_SPEED = 2.0;
 
 constexpr double FIXED_DT = 1.0 / 60.0;
+
+constexpr float NEAR_PLANE = 0.1f;
 
 namespace Stellar
 {
@@ -29,22 +30,23 @@ namespace Stellar
     m_window(800, 600, "Stellar Program"),
     m_input(m_window.getHandle()),
     m_graphicsContext(),
+    m_framebuffer(800, 600),
     m_debugOverlay(m_window.getHandle()),
     m_shader(assetPath("shaders/triangle.vert"), assetPath("shaders/triangle.frag")),
     m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
     m_sphereMesh(unitSphere(32, 64)),
-    m_orbitMesh(unitCircle(256), GL_LINE_LOOP),
-    m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f)),
+    m_planetMesh(unitSphere(512, 1024)),
+    m_orbitMesh(unitCircle(8192), GL_LINE_LOOP),
+    m_camera(CENTRAL_BODY_POSITION + glm::dvec3(0.0, 0.0, 3.0 * PLANET_RADIUS)),
     m_orbitCamera(10.0)
     {
-        // Viewport adjustment
-        int fbWidth = 0;
-        int fbHeight = 0;
-        m_window.getFramebufferSize(fbWidth, fbHeight);
-        glViewport(0, 0, fbWidth, fbHeight);
-
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
         glEnable(GL_DEPTH_TEST);
+
+        // Reversed-Z: depth 1 at the near plane, 0 at infinity (float depth is most precise near 0)
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // Depth range 0..1 instead of -1..1
+        glClearDepth(0.0); // "Farthest" is now 0
+        glDepthFunc(GL_GREATER); // Closer = bigger depth wins
 
         m_lastFrameTime = glfwGetTime();
     }
@@ -118,7 +120,9 @@ namespace Stellar
         }
 
         // FREE CAMERA (debug)
-        const float step = MOVE_SPEED * deltaTime;
+        // Speed grows with altitude: slow near the ground, fast far away (about one altitude per second)
+        const double altitude = glm::length(m_camera.getPosition() - CENTRAL_BODY_POSITION) - PLANET_RADIUS;
+        const float step = deltaTime * static_cast<float>(glm::max(static_cast<double>(CAMERA_MOVE_SPEED), altitude));
 
         m_camera.moveForward(step * static_cast<float>(m_input.axis(Action::MoveForward)));
         m_camera.moveRight(step * static_cast<float>(m_input.axis(Action::MoveRight)));
@@ -128,6 +132,13 @@ namespace Stellar
 
     void Application::render(const float alpha)
     {
+        int fbWidth = 0, fbHeight = 0;
+        m_window.getFramebufferSize(fbWidth, fbHeight);
+
+        m_framebuffer.resize(fbWidth, fbHeight);
+        m_framebuffer.bind();
+        glViewport(0, 0, fbWidth, fbHeight);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // VESSEL POSITION
@@ -150,14 +161,11 @@ namespace Stellar
             : m_camera.getViewMatrix();
 
         // PROJECTION
-        int fbWidth = 0, fbHeight = 0;
-        m_window.getFramebufferSize(fbWidth, fbHeight);
-
         const float aspectRatio = (fbHeight > 0)
             ? static_cast<float>(fbWidth) / static_cast<float>(fbHeight)
             : 1.0f;
 
-        const auto projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+        const auto projectionMatrix = reversedInfinitePerspective(glm::radians(45.0f), aspectRatio, NEAR_PLANE);
 
         // LIT OBJECTS (spheres)
         m_litShader.use();
@@ -171,7 +179,7 @@ namespace Stellar
 
         m_litShader.setVec3("uColor", 0.25f, 0.45f, 0.9f);
         m_litShader.setMat4("uModel", glm::value_ptr(centralModel));
-        m_sphereMesh.draw();
+        m_planetMesh.draw();
 
         // MODE - Satellite
         const glm::dvec3 orbiterRelativeToCam =  vesselPosition - cameraPosition;
@@ -198,6 +206,8 @@ namespace Stellar
             m_shader.setMat4("uModel", glm::value_ptr(orbitModelF));
             m_orbitMesh.draw();
         }
+
+        m_framebuffer.blitToScreen();
 
         // DEBUG OVERLAY
         m_debugOverlay.draw(m_world, cameraPosition);

@@ -16,12 +16,15 @@
 
 namespace Stellar
 {
-    // Central body. Toy units: r = 10, v = 10 -> one lap every 2*pi seconds.
-    // Replaced later on by a CelestialBody class
-    inline constexpr double ORBIT_MU = 1000.0;
-    inline constexpr double PLANET_RADIUS = 3.0;
+    inline constexpr double EARTH_RADIUS = 6'371'000.0;
+    inline constexpr double PLANET_SCALE = 3.0;
+    inline constexpr double STANDARD_GRAVITY = 9.80665;
+    inline constexpr double PLANET_RADIUS = EARTH_RADIUS / PLANET_SCALE;
+    inline constexpr double ORBIT_MU = STANDARD_GRAVITY * PLANET_RADIUS * PLANET_RADIUS;
     inline constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
 
+    inline constexpr double CONTACT_EPSILON = 1e-6;
+    
     /// Position + velocity of an object in the form the orbit functions expect.
     inline OrbitalState orbitalState(const GameObject& object)
     {

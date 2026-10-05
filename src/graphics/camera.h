@@ -8,6 +8,7 @@
 #pragma once
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace Stellar
 {
@@ -62,4 +63,15 @@ namespace Stellar
         float m_yaw = -90.0f;  ///< Degrees around the up axis; -90 looks at -Z
         float m_pitch = 0.0f;  ///< Degrees up/down, clamped to [-89, 89]
     };
+
+    /**
+     * @brief Perspective projection with reversed depth and no far plane.
+     *
+     * Depth is nearPlane / distance: 1 at the near plane, tending to 0 at infinity.
+     * Needs glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE) and glDepthFunc(GL_GREATER).
+     * @param fovY Vertical field of view, in radians.
+     * @param aspect Width / height.
+     * @param nearPlane Distance to the near plane; nothing closer is drawn.
+     */
+    glm::mat4 reversedInfinitePerspective(float fovY, float aspect, float nearPlane);
 } // Stellar

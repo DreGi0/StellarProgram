@@ -14,8 +14,8 @@
 
 namespace
 {
-    constexpr double MIN_DISTANCE = 1.5;
-    constexpr double MAX_DISTANCE = 500.0;
+    constexpr double MIN_DISTANCE = 5.0; // The vessel is 2 m in radius
+    constexpr double MAX_DISTANCE = 10'000'000.0; // 10 000 km: the whole planet fits on screen
 }
 
 namespace Stellar
