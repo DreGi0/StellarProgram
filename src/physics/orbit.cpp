@@ -108,8 +108,13 @@ namespace Stellar
 
     glm::dvec3 burnDirection(const OrbitalState& state, double prograde, double normal)
     {
-        const glm::dvec3 progradeDir = glm::normalize(state.velocity);
-        const glm::dvec3 normalDir = glm::normalize(glm::cross(state.position, state.velocity));
+        const double speed = glm::length(state.velocity);
+        const glm::dvec3 h = glm::cross(state.position, state.velocity);
+        const double hLength = glm::length(h);
+
+        // No velocity (landed): prograde means "up"; no orbit plane, so no normal
+        const glm::dvec3 progradeDir = speed > ELEMENTS_EPSILON ? state.velocity / speed : glm::normalize(state.position);
+        const glm::dvec3 normalDir = hLength > ELEMENTS_EPSILON ? h / hLength : glm::dvec3(0.0);
 
         const glm::dvec3 direction = prograde * progradeDir + normal * normalDir;
         const double length = glm::length(direction);
@@ -228,5 +233,13 @@ namespace Stellar
     OrbitalState stepKepler(const OrbitalState& current, const double mu, const double dt)
     {
         return elementsToState(propagateKepler(stateToElements(current, mu), mu, dt), mu);
+    }
+
+    double periapsisRadius(const OrbitalState& state, const double mu)
+    {
+        const glm::dvec3 h = glm::cross(state.position, state.velocity);
+        const glm::dvec3 eVec = glm::cross(state.velocity, h) / mu - glm::normalize(state.position);
+
+        return glm::dot(h, h) / (mu * (1.0 + glm::length(eVec)));
     }
 } // Stellar

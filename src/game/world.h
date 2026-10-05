@@ -19,6 +19,7 @@ namespace Stellar
     // Central body. Toy units: r = 10, v = 10 -> one lap every 2*pi seconds.
     // Replaced later on by a CelestialBody class
     inline constexpr double ORBIT_MU = 1000.0;
+    inline constexpr double PLANET_RADIUS = 3.0;
     inline constexpr glm::dvec3 CENTRAL_BODY_POSITION(10'000'000.0, 0.0, 0.0);
 
     /// Position + velocity of an object in the form the orbit functions expect.

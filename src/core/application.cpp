@@ -167,7 +167,7 @@ namespace Stellar
 
         // MODEL - "Earth"
         const glm::dvec3 centralRelativeToCam = CENTRAL_BODY_POSITION - cameraPosition;
-        const auto centralModel = glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam));
+        const auto centralModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(centralRelativeToCam)), glm::vec3(PLANET_RADIUS));
 
         m_litShader.setVec3("uColor", 0.25f, 0.45f, 0.9f);
         m_litShader.setMat4("uModel", glm::value_ptr(centralModel));
@@ -175,7 +175,7 @@ namespace Stellar
 
         // MODE - Satellite
         const glm::dvec3 orbiterRelativeToCam =  vesselPosition - cameraPosition;
-        const auto orbiterModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam)), glm::vec3(0.5f));
+        const auto orbiterModel = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(orbiterRelativeToCam)), glm::vec3(static_cast<float>(vessel.transform.scale)));
 
         m_litShader.setVec3("uColor", 0.9f, 0.9f, 0.9f);
         m_litShader.setMat4("uModel", glm::value_ptr(orbiterModel));
