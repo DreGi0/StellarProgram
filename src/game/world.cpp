@@ -11,6 +11,7 @@
 #include <glm/common.hpp>
 
 constexpr double THRUST_ACCELERATION = 1.0;
+constexpr double CONTACT_EPSILON = 0.000000001;
 constexpr double MAX_PHYSICS_WARP = 4.0;
 
 // Starting orbit, described with elements instead of position + velocity
@@ -46,12 +47,23 @@ namespace Stellar
     {
         const double dt = deltaTime * timeWarp();
 
+        bool touchedDown = false;
+
         for (GameObject& object : m_objects)
         {
             object.previousPosition = object.transform.position;
+
+            const double contactRadius = PLANET_RADIUS + object.transform.scale;
+            const bool burning = object.vessel && object.vessel->burn != glm::dvec2(0.0);
+
+            if (!burning && glm::length(object.transform.position) <= contactRadius + CONTACT_EPSILON)
+            {
+                continue;
+            }
+
             OrbitalState state = orbitalState(object);
 
-            if (object.vessel && object.vessel->burn != glm::dvec2(0.0))
+            if (burning)
             {
                 // Engine on: the orbit is changing, so leave the rails and step with Verlet
                 const glm::dvec3 thrust = THRUST_ACCELERATION * burnDirection(state, object.vessel->burn.x, object.vessel->burn.y);
@@ -62,13 +74,23 @@ namespace Stellar
                 state = INTEGRATORS[m_integratorIndex](state, ORBIT_MU, dt);
             }
 
+            const double r = glm::length(state.position);
+
+            // Contact: rest on the surface
+            if (r < contactRadius)
+            {
+                state.position *= contactRadius / r;
+                state.velocity = glm::dvec3(0.0);
+                touchedDown = true;
+            }
+
             object.transform.position = state.position;
             object.velocity = state.velocity;
         }
 
         m_missionTime += dt;
 
-        if (isBurning())
+        if (isBurning() || touchedDown)
         {
             m_initialEnergy = specificEnergy(orbitalState(vessel()), ORBIT_MU);
         }
@@ -136,7 +158,9 @@ namespace Stellar
     // Big steps would wreck the step-by-step integrators; only Kepler is exact for any step
     double World::timeWarp() const
     {
-        return isOnRails() && !isBurning() ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
+        const bool orbitClearsSurface = periapsisRadius(orbitalState(vessel()), ORBIT_MU) >= PLANET_RADIUS + vessel().transform.scale;
+
+        return isOnRails() && !isBurning() && orbitClearsSurface ? TIME_WARP_LEVELS[m_timeWarpIndex] : 1.0;
     }
 
     double World::physicsWarp() const

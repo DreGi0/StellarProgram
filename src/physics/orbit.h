@@ -117,6 +117,14 @@ namespace Stellar
      */
     OrbitalState stepKepler(const OrbitalState& current, double mu, double dt);
 
+    /**
+     * Closest distance to the central body along the current orbit.
+     * Avoids stateToElements, so it stays finite when the velocity is 0 (returns 0).
+     *
+     * @return Periapsis radius; works for ellipses and hyperbolas.
+     */
+    double periapsisRadius(const OrbitalState& state, double mu);
+
     /// Signature shared by all the step functions, so World can pick one at runtime.
     using StepFunction = OrbitalState (*)(const OrbitalState&, double, double);
 } // Stellar

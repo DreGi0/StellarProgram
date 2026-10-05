@@ -229,4 +229,12 @@ namespace Stellar
     {
         return elementsToState(propagateKepler(stateToElements(current, mu), mu, dt), mu);
     }
+
+    double periapsisRadius(const OrbitalState& state, const double mu)
+    {
+        const glm::dvec3 h = glm::cross(state.position, state.velocity);
+        const glm::dvec3 eVec = glm::cross(state.velocity, h) / mu - glm::normalize(state.position);
+
+        return glm::dot(h, h) / (mu * (1.0 + glm::length(eVec)));
+    }
 } // Stellar
