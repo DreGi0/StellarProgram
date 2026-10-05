@@ -55,6 +55,7 @@ namespace Stellar
         Shader m_shader;
         Shader m_litShader;
         Mesh m_sphereMesh;
+        Mesh m_planetMesh;
         Mesh m_orbitMesh;
         Camera m_camera;
         OrbitCamera m_orbitCamera;
