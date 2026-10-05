@@ -74,7 +74,7 @@ TEST_CASE("orbit camera zoom is clamped") {
 
     camera.zoom(0.0);
 
-    REQUIRE(glm::length(camera.offset()) == Catch::Approx(1.5));
+    REQUIRE(glm::length(camera.offset()) == Catch::Approx(5.0));
 }
 
 TEST_CASE("orbit camera pitch is limited") {

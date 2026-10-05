@@ -37,7 +37,7 @@ namespace Stellar
     m_litShader(assetPath("shaders/lit.vert"), assetPath("shaders/lit.frag")),
     m_sphereMesh(unitSphere(32, 64)),
     m_orbitMesh(unitCircle(256), GL_LINE_LOOP),
-    m_camera(glm::dvec3(10'000'000.0, 0.0f, 30.0f)),
+    m_camera(CENTRAL_BODY_POSITION + glm::dvec3(0.0, 0.0, 3.0 * PLANET_RADIUS)),
     m_orbitCamera(10.0)
     {
         glClearColor(0.0f, 0.07f, 0.12f, 1.0f);
@@ -120,7 +120,9 @@ namespace Stellar
         }
 
         // FREE CAMERA (debug)
-        const float step = MOVE_SPEED * deltaTime;
+        // Speed grows with altitude: slow near the ground, fast far away (about one altitude per second)
+        const double altitude = glm::length(m_camera.getPosition() - CENTRAL_BODY_POSITION) - PLANET_RADIUS;
+        const float step = deltaTime * static_cast<float>(glm::max(static_cast<double>(MOVE_SPEED), altitude));
 
         m_camera.moveForward(step * static_cast<float>(m_input.axis(Action::MoveForward)));
         m_camera.moveRight(step * static_cast<float>(m_input.axis(Action::MoveRight)));
