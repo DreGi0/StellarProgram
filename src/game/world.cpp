@@ -10,14 +10,13 @@
 #include <glm/trigonometric.hpp>
 #include <glm/common.hpp>
 
-constexpr double THRUST_ACCELERATION = 1.0;
-constexpr double CONTACT_EPSILON = 0.000000001;
+constexpr double THRUST_ACCELERATION = 5.0;
 constexpr double MAX_PHYSICS_WARP = 4.0;
 
 // Starting orbit, described with elements instead of position + velocity
 constexpr Stellar::OrbitalElements START_ORBIT {
-    .semiMajorAxis = 10.0,
-    .eccentricity = 0.3,
+    .semiMajorAxis = Stellar::PLANET_RADIUS + 100'000.0,
+    .eccentricity = 0.0,
     .inclination = glm::radians(20.0),
     .longitudeOfAscendingNode = 0.0,
     .argumentOfPeriapsis = 0.0,
@@ -107,7 +106,7 @@ namespace Stellar
         vessel.velocity = start.velocity;
         vessel.previousPosition = start.position;
         vessel.vessel.emplace();
-        vessel.transform.scale = 0.5;
+        vessel.transform.scale = 2.0;
 
         m_initialEnergy = specificEnergy(start, ORBIT_MU);
         m_missionTime = 0.0;

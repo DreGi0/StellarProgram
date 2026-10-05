@@ -69,7 +69,7 @@ TEST_CASE("Falling onto the planet leaves the vessel resting on the surface")
     // Burn retrograde until touchdown (step limit so a bug can't hang the test)
     world.setBurn(glm::dvec2(-1.0, 0.0));
 
-    for (int i = 0; i < 100'000 && glm::length(world.vessel().transform.position) > contactRadius + 1e-9; ++i)
+    for (int i = 0; i < 100'000 && glm::length(world.vessel().transform.position) > contactRadius + Stellar::CONTACT_EPSILON; ++i)
     {
         world.update(dt);
     }
@@ -77,7 +77,7 @@ TEST_CASE("Falling onto the planet leaves the vessel resting on the surface")
     world.setBurn(glm::dvec2(0.0)); // Engine off so the vessel can rest
 
     const glm::dvec3 landedPosition = world.vessel().transform.position;
-    REQUIRE(glm::length(landedPosition) <= contactRadius + 1e-9);
+    REQUIRE(glm::length(landedPosition) <= contactRadius + Stellar::CONTACT_EPSILON);
 
     // Stays put, no NaN, and time warp is blocked (periapsis is under the surface)
     world.setTimeWarp(7);
@@ -102,12 +102,12 @@ TEST_CASE("Burning from the ground keeps the vessel finite")
 
     world.setBurn(glm::dvec2(-1.0, 0.0));
 
-    for (int i = 0; i < 100'000 && glm::length(world.vessel().transform.position) > contactRadius + 1e-9; ++i)
+    for (int i = 0; i < 100'000 && glm::length(world.vessel().transform.position) > contactRadius + Stellar::CONTACT_EPSILON; ++i)
     {
         world.update(dt);
     }
 
-    REQUIRE(glm::length(world.vessel().transform.position) <= contactRadius + 1e-9);
+    REQUIRE(glm::length(world.vessel().transform.position) <= contactRadius + Stellar::CONTACT_EPSILON);
 
     // Every burn direction while landed (v = 0): prograde, retrograde, normal
     for (const glm::dvec2 burn : {glm::dvec2(1.0, 0.0), glm::dvec2(-1.0, 0.0), glm::dvec2(0.0, 1.0)})
@@ -117,6 +117,6 @@ TEST_CASE("Burning from the ground keeps the vessel finite")
 
         CHECK_FALSE(glm::any(glm::isnan(world.vessel().transform.position)));
         CHECK_FALSE(glm::any(glm::isnan(world.vessel().velocity)));
-        CHECK(glm::length(world.vessel().transform.position) >= contactRadius - 1e-9); // thrust < gravity: stays on the ground
+        CHECK(glm::length(world.vessel().transform.position) >= contactRadius - Stellar::CONTACT_EPSILON); // thrust < gravity: stays on the ground
     }
 }
